@@ -1,0 +1,6 @@
+[submodule "scraper-worker"]
+	path = scraper-worker
+	url = https://gitlab.com/laudiber/scraper-worker.git
+[submodule "scraper-manager"]
+	path = scraper-manager
+	url = https://gitlab.com/laudiber/scraper-manager.git

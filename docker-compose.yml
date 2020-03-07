@@ -1,0 +1,67 @@
+version: "2"
+services:
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    ports:
+        - "5433:5432" # Exposing Postgres on different port for convenience
+    environment:
+        POSTGRES_DB: "little-birds"
+        POSTGRES_USER: "postgres"
+        POSTGRES_PASSWORD: "password"
+    volumes:
+        - postgres-data:/data
+    restart: always
+
+  rabbit:
+    container_name: rabbit
+    image: rabbitmq:3-management
+    ports:
+        - "15673:15672" # Exposing RabbitMQ web management on different port for convenience
+    restart: always
+
+  scraper-worker:
+    container_name: scraper-worker
+    build:
+      context: scraper-worker
+    depends_on:
+      - rabbit
+      - postgres
+    environment:
+        REDIS_HOST: "redis"
+        REDIS_PORT: "6379"
+        RABBIT_PASSWORD: "guest"
+        RABBIT_USER: "guest"
+        RABBIT_HOST: "rabbit"
+        RABBIT_PORT: "5672"
+        RABBIT_MANAGEMENT_PORT: "15672"
+		DB_PASSWORD: "password"
+        DB_USER: "postgres"
+        DB_HOST: "postgres"
+        DB_NAME: "little-birds"
+
+  scraper-cli:
+    container_name: scraper-cli
+    build:
+      context: scraper-cli
+    depends_on:
+      - rabbit
+      - postgres
+    environment:
+        REDIS_HOST: "redis"
+        REDIS_PORT: "6379"
+        RABBIT_PASSWORD: "guest"
+        RABBIT_USER: "guest"
+        RABBIT_HOST: "rabbit"
+        RABBIT_PORT: "5672"
+        RABBIT_MANAGEMENT_PORT: "15672"
+		DB_PASSWORD: "password"
+        DB_USER: "postgres"
+        DB_HOST: "postgres"
+        DB_NAME: "little-birds"
+
+volumes:
+  redis-data:
+  postgres-data:
+
