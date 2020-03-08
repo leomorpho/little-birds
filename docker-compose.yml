@@ -1,30 +1,40 @@
 version: "3"
 services:
 
-    # postgres:
-    #   container_name: postgres
-    #   image: postgres
-    #   ports:
-    #       - "5433:5432" # Exposing Postgres on different port for convenience
-    #   environment:
-    #       POSTGRES_DB: "little-birds"
-    #       POSTGRES_USER: "postgres"
-    #       POSTGRES_PASSWORD: "password"
-    #   volumes:
-    #       - postgres-data:/data
-    #   restart: always
-
-  mongo:
-    image: mongo
-    restart: always
-    container_name: mongo
+  postgres:
+    container_name: postgres
+    image: postgres
+    ports:
+        - "5433:5432" # Exposing Postgres on different port for convenience
     environment:
-      MONGO_INITDB_DATABASE: "scraper-manager"
-      MONGO_INITDB_ROOT_USERNAME: "admin"
-      MONGO_INITDB_ROOT_PASSWORD: "admin"
+        POSTGRES_DB: "little-birds"
+        POSTGRES_USER: "postgres"
+        POSTGRES_PASSWORD: "password"
     volumes:
-        # - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-      - ./mongo-volume:/data/db
+        - postgres-data:/data
+    restart: always
+
+  # mongo:
+  #   image: mongo
+  #   restart: always
+  #   container_name: mongo
+  #   environment:
+  #     MONGO_INITDB_DATABASE: "scraper-manager"
+  #     MONGO_INITDB_ROOT_USERNAME: "admin"
+  #     MONGO_INITDB_ROOT_PASSWORD: "admin"
+  #   volumes:
+    # # - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    # - ./mongo-volume:/data/db
+    
+  rproxy:
+    hostname: rproxy
+    image: anuragrana/rotating-proxy
+    environment:
+        - tors=25
+    ports:
+        - "5566:5566"
+        - "4444:4444"
+        
 
         # mongo-express:
         #     image: mongo-express
@@ -66,26 +76,26 @@ services:
     #       DB_HOST: "postgres"
     #       DB_NAME: "little-birds"
 
-  scraper-manager:
-    container_name: scraper-manager
-    build:
-      context: scraper-manager
-    command: python manage.py runserver 0.0.0.0:8000
-    depends_on:
-        # - rabbit
-      - mongo
-    environment:
-        # RABBIT_PASSWORD: "guest"
-        # RABBIT_USER: "guest"
-        # RABBIT_HOST: "rabbit"
-        # RABBIT_PORT: "5672"
-        # RABBIT_MANAGEMENT_PORT: "15672"
-        DB_PASSWORD: "password"
-        DB_USER: "postgres"
-        DB_HOST: "postgres"
-        DB_NAME: "little-birds"
-    ports:
-        - 8000:8000
+  # scraper-manager:
+  #   container_name: scraper-manager
+  #   build:
+  #     context: scraper-manager
+  #   command: python manage.py runserver 0.0.0.0:8000
+  #   depends_on:
+  #       # - rabbit
+  #     - mongo
+  #   environment:
+  #       # RABBIT_PASSWORD: "guest"
+  #       # RABBIT_USER: "guest"
+  #       # RABBIT_HOST: "rabbit"
+  #       # RABBIT_PORT: "5672"
+  #       # RABBIT_MANAGEMENT_PORT: "15672"
+  #       DB_PASSWORD: "password"
+  #       DB_USER: "postgres"
+  #       DB_HOST: "postgres"
+  #       DB_NAME: "little-birds"
+  #   ports:
+  #       - 8000:8000
 
 volumes:
   postgres-data:
