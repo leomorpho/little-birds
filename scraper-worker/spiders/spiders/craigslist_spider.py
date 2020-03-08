@@ -13,13 +13,17 @@ class CraigslistSpider(scrapy.Spider):
         # open('proxies.txt', 'w').close()
 
     def parse(self, response):
+        # Get craigslist products page policy
+        # Find the xpath for product links from policy
         for hdrlnk in response.xpath('//a[contains(@class, "hdrlnk")]/@href').getall():
             full_url = response.urljoin(hdrlnk)
-            yield response.follow(hdrlnk, callback=self.parse_hdrlnk, cb_kwargs=dict(url=full_url))
+            yield response.follow(hdrlnk, callback=self.parse_hdrlnk, cb_kwargs=dict(url=full_url, policy=""))
+        # Find the xpath for next pages from policy
         for href in response.css('.next').xpath('@href'):
             yield response.follow(href, self.parse)
 
-    def parse_hdrlnk(self, response, url):
+    def parse_hdrlnk(self, response, url, policy):
+        # Find each xpath for each field from policy
         yield log.error({
             "title": response.xpath('//*[(@id = "titletextonly")]//text()').get(),
             "price": response.xpath('//*[contains(@class, "price")]//text()').get(),
