@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type Classified struct {
+type Classifieds struct {
 	ID          uint      `gorm:"primary_key" json:"id"`
 	Title       string    `json:"title"`
 	Price       string    `json:"price"`
@@ -15,4 +15,4 @@ type Classified struct {
 	DeletedAt   time.Time `json:"deleted_at"`
 }
 
-func (Classified) TableName() string { return "classifieds" }
+func (Classifieds) TableName() string { return "classifiedss" }

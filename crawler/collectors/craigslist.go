@@ -16,7 +16,7 @@ type Post struct {
 	PostedAt    string
 }
 
-// CraigslistCrawler is a crawler for the Craigslist classifieds site
+// CraigslistCrawler is a crawler for the Craigslist classifiedss site
 type CraigslistCrawler struct{}
 
 func NewCraigslistCrawler() CraigslistCrawler {
@@ -24,7 +24,7 @@ func NewCraigslistCrawler() CraigslistCrawler {
 	return craigslistCrawler
 }
 
-// Crawl crawls postings pages for Craigslist Classifieds
+// Crawl crawls postings pages for Craigslist Classifiedss
 // Categories and individual keywords can be searched by forming a proper url string
 func (CraigslistCrawler) Crawl(url string) error {
 
