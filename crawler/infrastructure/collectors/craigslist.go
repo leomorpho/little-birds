@@ -34,10 +34,10 @@ func (CraigslistCrawler) Crawl(url string) error {
 	// Instantiate default collector for postings page
 	c := colly.NewCollector()
 
-	c.onHTML("a[href]", func())
+	// c.onHTML("a[href]", func())
 
 	// Create another collector to scrape individual posting page
-	postCollector = c.Clone()
+	// postCollector = c.Clone()
 
 	c.Visit(url)
 

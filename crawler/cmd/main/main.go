@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/labstack/echo"
-	"github.com/micro/go-micro/router"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/crawler/collectors"
 	"gitlab.com/crawler/config"
 	"gitlab.com/crawler/infrastructure/datastore"
+	"gitlab.com/crawler/infrastructure/router"
 	"gitlab.com/crawler/registry"
 )
 
@@ -26,9 +26,13 @@ func main() {
 	db.LogMode(true)
 	defer db.Close()
 
-	r := registry.NewRegistry()
+	r := registry.NewRegistry(db)
 
 	e := echo.New()
 	e = router.NewRouter(e, r.NewAppController())
 
+	fmt.Println("Server listen at http://localhost" + ":" + config.C.Server.Address)
+	if err := e.Start(":" + config.C.Server.Address); err != nil {
+		log.Fatalln(err)
+	}
 }

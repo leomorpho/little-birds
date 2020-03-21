@@ -1,7 +1,7 @@
 package datastore
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
