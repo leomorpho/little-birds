@@ -1,6 +1,20 @@
 version: "3"
 services:
 
+  crawler:
+    container_name: crawler
+    build:
+      context: crawler
+    depends_on:
+      - postgres
+    environment:
+        DB_PASSWORD: "password"
+        DB_USER: "postgres"
+        DB_HOST: "postgres"
+        DB_NAME: "little-birds"
+   ports:
+       - 8000:8000
+
   postgres:
     container_name: postgres
     image: postgres
@@ -14,17 +28,6 @@ services:
         - postgres-data:/data
     restart: always
 
-  # mongo:
-  #   image: mongo
-  #   restart: always
-  #   container_name: mongo
-  #   environment:
-  #     MONGO_INITDB_DATABASE: "scraper-manager"
-  #     MONGO_INITDB_ROOT_USERNAME: "admin"
-  #     MONGO_INITDB_ROOT_PASSWORD: "admin"
-  #   volumes:
-    # # - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    # - ./mongo-volume:/data/db
     
   rproxy:
     hostname: rproxy
@@ -76,26 +79,18 @@ services:
     #       DB_HOST: "postgres"
     #       DB_NAME: "little-birds"
 
-  # scraper-manager:
-  #   container_name: scraper-manager
-  #   build:
-  #     context: scraper-manager
-  #   command: python manage.py runserver 0.0.0.0:8000
-  #   depends_on:
-  #       # - rabbit
-  #     - mongo
+  #
+  # mongo:
+  #   image: mongo
+  #   restart: always
+  #   container_name: mongo
   #   environment:
-  #       # RABBIT_PASSWORD: "guest"
-  #       # RABBIT_USER: "guest"
-  #       # RABBIT_HOST: "rabbit"
-  #       # RABBIT_PORT: "5672"
-  #       # RABBIT_MANAGEMENT_PORT: "15672"
-  #       DB_PASSWORD: "password"
-  #       DB_USER: "postgres"
-  #       DB_HOST: "postgres"
-  #       DB_NAME: "little-birds"
-  #   ports:
-  #       - 8000:8000
+  #     MONGO_INITDB_DATABASE: "scraper-manager"
+  #     MONGO_INITDB_ROOT_USERNAME: "admin"
+  #     MONGO_INITDB_ROOT_PASSWORD: "admin"
+  #   volumes:
+    # # - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    # - ./mongo-volume:/data/db
 
 volumes:
   postgres-data:
