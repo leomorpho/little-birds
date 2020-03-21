@@ -17,16 +17,15 @@ type ClassifiedsController interface {
 
 func NewClassifiedsController(cc interactor.ClassifiedsInteractor) ClassifiedsController {
 	return &classifiedsController{cc}
-	c
 }
 
-func (cc *classifiedsController) GetClassifieds(c Context) error {
-	var c []*model.Classifieds
+func (cc *classifiedsController) GetClassifieds(co Context) error {
+	var cl []*model.Classifieds
 
-	u, err := cc.classifiedsInteractor.Get(c)
+	cl, err := cc.classifiedsInteractor.Get(cl)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, u)
+	return co.JSON(http.StatusOK, cl)
 }

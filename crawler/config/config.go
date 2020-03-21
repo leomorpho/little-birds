@@ -11,11 +11,15 @@ import (
 
 type config struct {
 	Database struct {
-		User     string
-		Password string
-		Net      string
-		Addr     string
-		DBName   string
+		User                 string
+		Password             string
+		Net                  string
+		Addr                 string
+		DBName               string
+		AllowNativePasswords bool
+		Params               struct {
+			ParseTime string
+		}
 	}
 	Server struct {
 		Address string
@@ -28,8 +32,8 @@ func ReadConfig() {
 	Config := &C
 
 	viper.SetConfigName("config")
-	viper.SetConfigType("yml")
-	viper.AddConfigPath("./config.yml")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {

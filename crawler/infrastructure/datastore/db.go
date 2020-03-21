@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"gitlab.com/crawler/config"
 )
 
 func NewDB() *gorm.DB {
