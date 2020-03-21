@@ -12,14 +12,15 @@ type classifiedsController struct {
 }
 
 type ClassifiedsController interface {
-	GetClassifiedss(c Context) error
+	GetClassifieds(c Context) error
 }
 
 func NewClassifiedsController(cc interactor.ClassifiedsInteractor) ClassifiedsController {
 	return &classifiedsController{cc}
+	c
 }
 
-func (cc *classifiedsController) GetClassifiedss(c Context) error {
+func (cc *classifiedsController) GetClassifieds(c Context) error {
 	var c []*model.Classifieds
 
 	u, err := cc.classifiedsInteractor.Get(c)

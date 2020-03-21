@@ -24,7 +24,7 @@ func NewCraigslistCrawler() CraigslistCrawler {
 	return craigslistCrawler
 }
 
-// Crawl crawls postings pages for Craigslist Classifiedss
+// Crawl crawls postings pages for Craigslist Classifieds
 // Categories and individual keywords can be searched by forming a proper url string
 func (CraigslistCrawler) Crawl(url string) error {
 
