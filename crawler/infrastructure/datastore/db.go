@@ -1,28 +1,24 @@
 package datastore
 
 import (
+	"fmt"
+
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"gitlab.com/crawler/config"
 )
 
 func NewDB() *gorm.DB {
-	DBMS := "mysql"
-	mySqlConfig := &mysql.Config{
-		User:                 config.C.Database.User,
-		Passwd:               config.C.Database.Password,
-		Net:                  config.C.Database.Net,
-		Addr:                 config.C.Database.Addr,
-		DBName:               config.C.Database.DBName,
-		AllowNativePasswords: config.C.Database.AllowNativePasswords,
-		Params: map[string]string{
-			"parseTime": config.C.Database.Params.ParseTime,
-		},
-	}
+	postgresURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=%s password=%s",
+		config.C.Database.Host,
+		config.C.Database.User,
+		config.C.Database.DBName,
+		config.C.Database.SSL,
+		config.C.Database.Password)
 
-	db, err := gorm.Open(DBMS, mySqlConfig.FormatDSN())
+	db, err := gorm.Open("postgres", postgresURI)
 
 	if err != nil {
 		log.Fatalln(err)

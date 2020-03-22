@@ -1,6 +1,5 @@
 version: "3"
 services:
-
   crawler:
     container_name: crawler
     build:
@@ -8,12 +7,15 @@ services:
     depends_on:
       - postgres
     environment:
-        DB_PASSWORD: "password"
-        DB_USER: "postgres"
-        DB_HOST: "postgres"
-        DB_NAME: "little-birds"
-   ports:
-       - 8000:8000
+        - ENVIRONMENT=PROD
+        - POSTGRES_PASSWORD=password
+        - POSTGRES_USER=postgres
+        - POSTGRES_HOST=postgres
+        - POSTGRES_DB=little-birds
+        - POSTGRES_SSL=disable
+        - SERVER_PORT=8080
+    ports:
+        - 8000:8000
 
   postgres:
     container_name: postgres
@@ -28,7 +30,7 @@ services:
         - postgres-data:/data
     restart: always
 
-    
+
   rproxy:
     hostname: rproxy
     image: anuragrana/rotating-proxy
@@ -37,7 +39,9 @@ services:
     ports:
         - "5566:5566"
         - "4444:4444"
-        
+
+volumes:
+  postgres-data:
 
         # mongo-express:
         #     image: mongo-express
@@ -91,7 +95,3 @@ services:
   #   volumes:
     # # - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     # - ./mongo-volume:/data/db
-
-volumes:
-  postgres-data:
-
