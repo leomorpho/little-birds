@@ -2,8 +2,11 @@ package datastore
 
 import (
 	"fmt"
+	"strconv"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jinzhu/gorm"
@@ -11,18 +14,33 @@ import (
 )
 
 func NewDB() *gorm.DB {
-	postgresURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=%s password=%s",
-		config.C.Database.Host,
-		config.C.Database.User,
-		config.C.Database.DBName,
-		config.C.Database.SSL,
-		config.C.Database.Password)
 
-	db, err := gorm.Open("postgres", postgresURI)
+	if config.C.General.Environment == "integration" {
+		log.Info("Creating new postgres database connection")
+		postgresURI := fmt.Sprintf("host=%s port= %s user=%s dbname=%s password=%s",
+			config.C.Database.Host,
+			strconv.Itoa(config.C.Database.Port),
+			config.C.Database.User,
+			config.C.Database.DBName,
+			config.C.Database.Password)
 
+		log.Info(postgresURI)
+		db, err := gorm.Open("postgres", postgresURI)
+		defer db.Close()
+
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		db.LogMode(true)
+		return db
+	}
+
+	log.Info("Creating new sqlite database instance")
+	db, err := gorm.Open("sqlite3", "/tmp/gorm.db")
 	if err != nil {
 		log.Fatalln(err)
 	}
-
+	defer db.Close()
 	return db
 }

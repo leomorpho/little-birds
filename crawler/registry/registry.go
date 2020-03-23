@@ -2,6 +2,7 @@ package registry
 
 import (
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 	controller "gitlab.com/crawler/interface/controllers"
 )
 
@@ -18,5 +19,7 @@ func NewRegistry(db *gorm.DB) Registry {
 }
 
 func (r *registry) NewAppController() controller.AppController {
-	return r.NewAppController()
+	log.Debug("Create app controller")
+	var appController controller.AppController
+	return appController
 }

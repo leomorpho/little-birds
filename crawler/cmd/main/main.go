@@ -18,14 +18,14 @@ func main() {
 	// if err != nil {
 	// 	log.Error(fmt.Sprintf("Error while scraping %v", url))
 	// }
+	log.SetLevel(log.DebugLevel)
 
 	config.ReadConfig()
 
 	db := datastore.NewDB()
-	db.LogMode(true)
-	defer db.Close()
 
 	r := registry.NewRegistry(db)
+	log.Info("Created registry")
 
 	e := echo.New()
 	e = router.NewRouter(e, r.NewAppController())

@@ -1,5 +1,5 @@
 package controller
 
-type AppController interface {
+type AppController struct {
 	ClassifiedsController
 }

@@ -1,9 +1,14 @@
+general:
+  environment: testing
+  loglevel: debug
+
 database:
   host: localhost
   user: root
   password: root
   dbname: test
   ssl: disable
+  loglevel: debug
 
 server:
   port: 8080
