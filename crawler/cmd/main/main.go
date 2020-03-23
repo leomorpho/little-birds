@@ -18,7 +18,6 @@ func main() {
 	// if err != nil {
 	// 	log.Error(fmt.Sprintf("Error while scraping %v", url))
 	// }
-	log.SetLevel(log.DebugLevel)
 
 	config.ReadConfig()
 

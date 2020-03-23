@@ -17,12 +17,13 @@ func NewDB() *gorm.DB {
 
 	if config.C.General.Environment == "integration" {
 		log.Info("Creating new postgres database connection")
-		postgresURI := fmt.Sprintf("host=%s port= %s user=%s dbname=%s password=%s",
+		postgresURI := fmt.Sprintf("host=%s port= %s user=%s dbname=%s password=%s sslmode=%s",
 			config.C.Database.Host,
 			strconv.Itoa(config.C.Database.Port),
 			config.C.Database.User,
 			config.C.Database.DBName,
-			config.C.Database.Password)
+			config.C.Database.Password,
+			config.C.Database.SSL)
 
 		log.Info(postgresURI)
 		db, err := gorm.Open("postgres", postgresURI)
