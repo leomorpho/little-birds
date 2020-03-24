@@ -1,8 +1,10 @@
 package datastore
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -12,6 +14,8 @@ import (
 	"github.com/jinzhu/gorm"
 	"gitlab.com/crawler/config"
 )
+
+const DB_CONN_TIMEOUT = 30
 
 func NewDB() *gorm.DB {
 
@@ -26,7 +30,7 @@ func NewDB() *gorm.DB {
 			config.C.Database.SSL)
 
 		log.Info(postgresURI)
-		db, err := gorm.Open("postgres", postgresURI)
+		db, err := connectWithRetry("postgres", postgresURI)
 		defer db.Close()
 
 		if err != nil {
@@ -44,4 +48,26 @@ func NewDB() *gorm.DB {
 	}
 	defer db.Close()
 	return db
+}
+
+func connectWithRetry(dbType, uri string) (*gorm.DB, error) {
+
+	err := errors.New("No DB connection")
+
+	ch := make(chan string, 1)
+	go func() {
+		for err != nil {
+			_, err = gorm.Open(dbType, uri)
+		}
+		ch <- "Connection made"
+	}()
+
+	select {
+	case _ = <-ch:
+		db, err := gorm.Open(dbType, uri)
+		return db, err
+	case <-time.After(DB_CONN_TIMEOUT * time.Second):
+		db, err := gorm.Open(dbType, uri)
+		return db, err
+	}
 }

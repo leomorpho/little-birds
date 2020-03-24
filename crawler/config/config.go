@@ -41,7 +41,7 @@ func (p Database) Validate() error {
 		validation.Field(&p.User, validation.Required),
 		validation.Field(&p.Password, validation.Required),
 		validation.Field(&p.DBName, validation.Required),
-		validation.Field(&p.SSL, validation.Required, validation.In("disable", "enable")))
+		validation.Field(&p.SSL, validation.Required))
 }
 
 // Server represents all server related configs for the running app
