@@ -14,26 +14,26 @@ services:
         POSTGRES_PORT: 5432
         POSTGRES_DB: ${POSTGRES_DB}
         POSTGRES_SSL: ${POSTGRES_SSL}
-        SERVER_PORT: 8000
+        SERVER_PORT: 8016
+    ports:
+        - 8016:8016
+  ai-engine:
+    container_name: ai-engine
+    build:
+      context: ai-engine
+    depends_on:
+      - postgres
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_SSL: ${POSTGRES_SSL}
+      SERVER_PORT: 8016
     ports:
         - 8000:8000
-  # learner:
-  #   container_name: learner
-  #   build:
-  #     context: learner
-  #   depends_on:
-  #     - postgres
-  #   environment:
-  #       - ENVIRONMENT=integration_env
-  #       - POSTGRES_PASSWORD=password
-  #       - POSTGRES_USER=postgres
-  #       - POSTGRES_HOST=postgres
-  #       - POSTGRES_PORT=5432
-  #       - POSTGRES_DB=little-birds
-  #       - POSTGRES_SSL=disable
-  #       - SERVER_PORT=8000
-  #   ports:
-  #       - 8000:8000
 
   postgres:
     container_name: postgres

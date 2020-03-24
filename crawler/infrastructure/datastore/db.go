@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	// "github.com/jinzhu/gorm/dialects/postgres" is the dependency for gorm postgres
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -15,8 +16,10 @@ import (
 	"gitlab.com/crawler/config"
 )
 
-const DB_CONN_TIMEOUT = 30
+// DbConnTimeout is the connection timeout for connecting to the gorm database
+const DbConnTimeout = 30
 
+// NewDB creates a new database using GORM
 func NewDB() *gorm.DB {
 
 	if config.C.General.Environment == "integration" {
@@ -66,7 +69,7 @@ func connectWithRetry(dbType, uri string) (*gorm.DB, error) {
 	case _ = <-ch:
 		db, err := gorm.Open(dbType, uri)
 		return db, err
-	case <-time.After(DB_CONN_TIMEOUT * time.Second):
+	case <-time.After(DbConnTimeout * time.Second):
 		db, err := gorm.Open(dbType, uri)
 		return db, err
 	}
