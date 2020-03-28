@@ -1,0 +1,37 @@
+#:kivy 1.11.1
+ProcessHtml:
+
+<ProcessHtml>:
+    html_input: dirty_html
+    html_output: clean_html
+    BoxLayout:
+        orientation: "vertical"
+        TextInput:
+            id: dirty_html
+            multiline: True
+            size_hint_y: 0.05
+            auto_indent: True
+            cursor_blink: True
+            cursor_width: "2sp"
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: 75
+            orientation: "horizontal"
+            Button:
+                text: "Pretty Clean"
+                on_press: root.pretty_clean()
+            Button:
+                text: "Clean + Compress"
+                on_press: root.deep_clean()
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            bar_width: 30
+            scroll_type: ['content', 'bars']
+            Label:
+                size_hint_y: None
+                height: self.texture_size[1]
+                text_size: self.width, None
+                padding: 10, 10
+                text: "### NO RESULT ###"
+                id: clean_html

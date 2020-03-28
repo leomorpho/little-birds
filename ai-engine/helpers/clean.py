@@ -1,20 +1,22 @@
 import lxml
-import argparse
 import pyperclip
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
+from kivy.uix.widget import Widget
+from kivy.properties import ObjectProperty
+from kivy.core.window import Window
 from lxml.html.clean import Cleaner
+from bs4 import BeautifulSoup as bs
+import html
 
-parser = argparse.ArgumentParser(description='Clean up scraped html')
-parser.add_argument("html", type=str, help="a dirty html string")
-parser.add_argument("-p", "--pretty", type=bool, default=False, help="leave pretty")
-args = parser.parse_args()
-
-
-
-clean_html = ""
 
 # Take raw scraped html and clean it, giving it back through clipboard.
-if args.pretty:
-    clean_html
+# if args.pretty:
+#     clean_html
 
 # Remove all javascript
 # Remove html comments
@@ -22,36 +24,50 @@ if args.pretty:
 # Encode
 
 class HtmlCleaner():
-    def __init__(self, html, pretty):
-        """
-        """
-        self.pretty = pretty
-        self.html = html
-        self.cleaner = Cleaner()
-        self.cleaner.javascript = True # This is True because we want to activate the javascript filter
-        self.cleaner.style = True      # This is True because we want to activate the styles & stylesheet filter
+    def pretty_clean(self, html_str):
+        cleaner = Cleaner(style=True, 
+                          inline_style=True, 
+                          links=False, 
+                          page_structure=False)
+        clean_html = cleaner.clean_html(html_str)
+        soup = bs(clean_html)  
+        return soup.prettify()
     
-    def clean(self):
-        if self.pretty:
-            self.pretty_clean()
-        else:
-            self.full_clean()
+    def full_clean(self, html_str):
+        cleaner = Cleaner(style=True, 
+                          inline_style=True, 
+                          links=False, 
+                          page_structure=True)
+        clean_html = cleaner.clean_html(html_str)
+        clean_html = " ".join(clean_html.split())
+        clean_html = html.escape(clean_html)
+        # clean_html = html.unescape(clean_html)
+        return clean_html
+
+   
+
+html_cleaner = HtmlCleaner()
+
+class ProcessHtml(BoxLayout):
+    html_input = ObjectProperty()
+    html_output = ObjectProperty()
     
     def pretty_clean(self):
-        self.html = self.clean_javascript()
+        if self.html_input.text != "":
+            self.html_output.text = html_cleaner.pretty_clean(self.html_input.text)
+        pyperclip.copy(self.html_output.text)
+        pyperclip.paste()
     
-    def full_clean(self):
-        pass
-    
-    def clean_spaces(self):
-        pass
-    
-    def clean_javascript(self):
-        pass
-    
-    def clean_html_comments(self):
-        pass
+    def deep_clean(self):
+        if self.html_input.text != "":
+            self.html_output.text = html_cleaner.full_clean(self.html_input.text)
+        pyperclip.copy(self.html_output.text)
+        pyperclip.paste()
 
-htmlCleaner = HtmlCleaner(html=args.html, pretty=args.pretty)
-pyperclip.copy(htmlCleaner.html)
-pyperclip.paste()
+class UserInterface(App):
+    Window.maximize() 
+    pass
+
+
+if __name__ == '__main__':
+    UserInterface().run()
