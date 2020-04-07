@@ -41,11 +41,19 @@ class HtmlCleaner():
         clean_html = cleaner.clean_html(html_str)
         clean_html = " ".join(clean_html.split())
         clean_html = html.escape(clean_html)
-        # clean_html = html.unescape(clean_html)
         return clean_html
-
+    
+    def unescape(self, html_str):
+        html_str = html.unescape(html_str)
+        soup = bs(html_str)  
+        return soup.prettify()
+    
+    def unescape_dumped_text(self, html_str):
+        html_str = html.unescape(html_str)
+        soup = bs(html_str)  
+        text = soup.get_text()
+        return text
    
-
 html_cleaner = HtmlCleaner()
 
 class ProcessHtml(BoxLayout):
@@ -63,6 +71,16 @@ class ProcessHtml(BoxLayout):
             self.html_output.text = html_cleaner.full_clean(self.html_input.text)
         pyperclip.copy(self.html_output.text)
         pyperclip.paste()
+        
+    def unescape(self):
+        if self.html_input.text != "":
+            self.html_output.text = html_cleaner.unescape(self.html_input.text)
+    
+    def unescape_dumped_text(self):
+        text = ""
+        if self.html_input.text != "":
+            text = html_cleaner.unescape_dumped_text(self.html_input.text)
+        self.html_output.text = text
 
 class UserInterface(App):
     Window.maximize() 
