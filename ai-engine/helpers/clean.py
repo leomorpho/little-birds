@@ -48,11 +48,26 @@ class HtmlCleaner():
         soup = bs(html_str)  
         return soup.prettify()
     
-    def unescape_dumped_text(self, html_str):
+    def extract_data_in_place(self, html_str):
         html_str = html.unescape(html_str)
         soup = bs(html_str)  
         text = soup.get_text()
         return text
+    
+    def extract_data_compressed(self, html_str):
+        html_str = self.full_clean(html_str)
+        html_str = html.unescape(html_str)
+        soup = bs(html_str)  
+        text = soup.get_text()
+        return text
+    
+    def pipeline_cleaner(self, html_str):
+        cleaner = Cleaner(style=True, 
+                          inline_style=True, 
+                          links=False, 
+                          page_structure=True)
+        clean_html = cleaner.clean_html(html_str)
+        return " ".join(clean_html.split())
    
 html_cleaner = HtmlCleaner()
 
@@ -75,12 +90,28 @@ class ProcessHtml(BoxLayout):
     def unescape(self):
         if self.html_input.text != "":
             self.html_output.text = html_cleaner.unescape(self.html_input.text)
+            self.html_input.text = self.html_output.text
     
-    def unescape_dumped_text(self):
-        text = ""
+    def extract_data_in_place(self):
         if self.html_input.text != "":
-            text = html_cleaner.unescape_dumped_text(self.html_input.text)
+            self.html_output.text = html_cleaner.extract_data_in_place(self.html_input.text)
+    
+    def extract_data_compressed(self):
+        if self.html_input.text != "":
+            self.html_output.text = html_cleaner.extract_data_compressed(self.html_input.text)
+    
+    # Go from raw to ready for addition to training corpus
+    def pipeline(self):
+        if self.html_input.text == "":
+            return
+        data = html_cleaner.pipeline_cleaner(self.html_input.text)
+        soup = bs(data)  
+        text = soup.get_text()
         self.html_output.text = text
+        pyperclip.copy(self.html_output.text)
+        pyperclip.paste()
+        
+    
 
 class UserInterface(App):
     Window.maximize() 

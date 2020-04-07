@@ -34,3 +34,21 @@ Different category are mutually exclusive and may be part of different models, c
 
 ## Clean data
 Strip text from html while appending useful information extracted from the html elements (classes, url, etc)
+
+### Pipeline
+1. Extract text from html
+2. Remove extra whitespace
+3. (Expand contractions)
+4. (Remove special characters?)
+5. Convert numbers to numeric form
+6. Remove stopwords
+
+Ideas: train a message encode to extract useful features (encoder)
+
+**Example of training dataset:**
+```
+{
+    "originalHtmlString": "The html string cleaned out of any script or comments",
+    "parsedString": "Only words. (Metadata may extracted from html may have been appended, such as datetime)."
+}
+```

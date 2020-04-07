@@ -24,11 +24,17 @@ ProcessHtml:
                 text: "Clean + Compress"
                 on_press: root.deep_clean()
             Button:
-                text: "Uncompress + pretty"
-                on_press: root.unescape()
+                text: "Unescape"
+                on_press: root.unescape() 
             Button:
-                text: "Uncompress + pretty + dump text"
-                on_press: root.unescape_dumped_text()    
+                text: "Extract data in-place"
+                on_press: root.extract_data_in_place() 
+            Button:
+                text: "Extract data compressed"
+                on_press: root.extract_data_compressed() 
+            Button:
+                text: "Full pipeline"
+                on_press: root.pipeline()     
         ScrollView:
             do_scroll_x: False
             do_scroll_y: True
