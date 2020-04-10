@@ -134,8 +134,8 @@ CONTRACTION_MAP = {
 
 def expand_contractions(text, contraction_mapping=CONTRACTION_MAP):
     
-    contractions_pattern = re.compile('({})'.format('|'.join(contraction_mapping.keys())), 
-                                      flags=re.IGNORECASE|re.DOTALL)
+    contractions_pattern = re.compile('({})'.format(
+        '|'.join(contraction_mapping.keys())), flags=re.IGNORECASE|re.DOTALL)
     def expand_match(contraction):
         match = contraction.group(0)
         first_char = match[0]

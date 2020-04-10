@@ -10,7 +10,7 @@ from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
 from preprocessing.html_parsers import HtmlCleaner
-from preprocessing.object_builder import pretty_clean, pipeline_result
+from preprocessing.object_builder import pretty_clean, call_pipeline
 import json
 import html
 import spacy
@@ -38,21 +38,22 @@ class ProcessHtml(BoxLayout):
         pyperclip.copy(self.html_output.text)
         pyperclip.paste()
     
-    # Go from raw to ready for addition to training corpus
+    # Format for training corpus
     def pipeline(self):
         if self.html_input.text == "":
             return
-        result = pipeline_result(self.html_input.text)
+        # print(self.html_input.text)
+        result = call_pipeline(self.html_input.text)
         self.html_output.text = json.dumps(result, indent=4)
         # pyperclip.copy(self.html_output.text)
         # pyperclip.paste()
         
     
 
-class Ui(App):
+class UI(App):
     Window.maximize() 
     pass
 
 
 if __name__ == '__main__':
-    Ui().run()
+    UI().run()
