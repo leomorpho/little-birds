@@ -13,7 +13,8 @@ from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
 from preprocessing.html_parsers import HtmlCleaner
-from preprocessing.object_builder import pretty_clean, pprint_unescape, call_pipeline
+from preprocessing.object_builder import pretty_clean, pprint_unescape, \
+    call_pipeline, pipeline_on_saved_data
 
 
 # Take raw scraped html and clean it, giving it back through clipboard.
@@ -59,6 +60,13 @@ class ProcessHtml(BoxLayout):
             return
         result = call_pipeline(self.html_input.text)
         self.html_output.text = json.dumps(result, indent=4)
+        # pyperclip.copy(self.html_output.text)
+        # pyperclip.paste()
+        
+    # Format for training corpus
+    def pipeline_on_saved_data(self):
+        result = pipeline_on_saved_data()
+        self.html_output.text = "DONE"
         # pyperclip.copy(self.html_output.text)
         # pyperclip.paste()
         

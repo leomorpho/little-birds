@@ -59,3 +59,9 @@ def call_pipeline(html_str: str) -> str:
         "html": raw_html
     }
     return obj
+
+def pipeline_on_saved_data() -> None:
+    # Add button in UI to save html (with url) to DB. Should there also be an option 
+    # to add words to the metawords (like handpicked categories). This option would 
+    # need autocomplete to be sure not to create too many
+    pass

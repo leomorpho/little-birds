@@ -3,16 +3,35 @@ ProcessHtml:
 
 <ProcessHtml>:
     html_input: dirty_html
+    url: url
     html_output: clean_html
     BoxLayout:
         orientation: "vertical"
         TextInput:
             id: dirty_html
             multiline: True
-            size_hint_y: 0.05
+            size_hint_y: 0.03
             auto_indent: True
             cursor_blink: True
             cursor_width: "2sp"
+            hint_text: "Enter raw HTML"
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: 0.03
+            TextInput:
+                id: url
+                multiline: False
+                auto_indent: False
+                cursor_blink: True
+                cursor_width: "2sp"
+                hint_text: "Enter URL"
+            TextInput:
+                id: url
+                multiline: False
+                auto_indent: False
+                cursor_blink: True
+                cursor_width: "2sp"
+                hint_text: "Enter a new metawords"
         BoxLayout:
             size_hint_y: 0.1
             size_hint_max_y: 75
@@ -26,6 +45,9 @@ ProcessHtml:
             Button:
                 text: "unescape html + pprint"
                 on_press: root.pprint_unescape()
+            Button:
+                text: "run pipeline on ALL saved data"
+                on_press: root.pipeline_on_saved_data()
             Button:
                 text: "full pipeline"
                 on_press: root.pipeline()     
