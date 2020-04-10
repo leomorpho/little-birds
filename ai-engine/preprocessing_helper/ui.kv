@@ -18,10 +18,16 @@ ProcessHtml:
             size_hint_max_y: 75
             orientation: "horizontal"
             Button:
-                text: "Pretty Clean"
+                text: "pretty clean"
                 on_press: root.pretty_clean()
             Button:
-                text: "Full pipeline"
+                text: "escape html"
+                on_press: root.escape()
+            Button:
+                text: "unescape html + pprint"
+                on_press: root.pprint_unescape()
+            Button:
+                text: "full pipeline"
                 on_press: root.pipeline()     
         ScrollView:
             do_scroll_x: False

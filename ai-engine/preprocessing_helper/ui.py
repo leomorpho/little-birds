@@ -1,5 +1,8 @@
 import lxml
 import pyperclip
+import json
+import html
+import spacy
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
@@ -10,10 +13,8 @@ from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
 from preprocessing.html_parsers import HtmlCleaner
-from preprocessing.object_builder import pretty_clean, call_pipeline
-import json
-import html
-import spacy
+from preprocessing.object_builder import pretty_clean, pprint_unescape, call_pipeline
+
 
 # Take raw scraped html and clean it, giving it back through clipboard.
 # if args.pretty:
@@ -35,14 +36,27 @@ class ProcessHtml(BoxLayout):
         if self.html_input.text == "":
             return
         self.html_output.text = pretty_clean(self.html_input.text)
+        # pyperclip.copy(self.html_output.text)
+        # pyperclip.paste()
+    
+    def escape(self):
+        if self.html_input.text == "":
+            return
+        self.html_output.text = html.escape(" ".join(self.html_input.text.split()))
         pyperclip.copy(self.html_output.text)
         pyperclip.paste()
-    
+        
+    def pprint_unescape(self):
+        if self.html_input.text == "":
+            return
+        self.html_output.text = pprint_unescape(self.html_input.text)
+        # pyperclip.copy(self.html_output.text)
+        # pyperclip.paste()
+        
     # Format for training corpus
     def pipeline(self):
         if self.html_input.text == "":
             return
-        # print(self.html_input.text)
         result = call_pipeline(self.html_input.text)
         self.html_output.text = json.dumps(result, indent=4)
         # pyperclip.copy(self.html_output.text)

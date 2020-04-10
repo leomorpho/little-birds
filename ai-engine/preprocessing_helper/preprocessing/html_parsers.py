@@ -1,6 +1,13 @@
 import html
+import csv
+import typing
+import logging 
 from html.parser import HTMLParser
 from lxml.html.clean import Cleaner
+from .nlp.utils import remove_stopwords, lemmatize_text, important_words, expand_contractions
+
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 
 # Elements that require text to have a new line ("\n") inserted
 NEWLINE_ELEMENTS = {"address", "article", "aside", "blockquote",
@@ -17,37 +24,75 @@ SEMANTIC_ELEMENTS = {"a", "title", "cite", "code", "data", "dfn", "kbd",
 
 # MULTIMEDIA_ELEMENTS = {"audio", "img", "map", "track", "video"}
 # EMBEDDED_ELEMENTS = {"embed", "iframe", "object", "param", "picture", "source"}
-# TABLE_ELEMENTS = {"caption", "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr"}
-IGNORE_CHARS = {"/n", " "}
+# TABLE_ELEMENTS = {"caption", "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr"}             
 
-
-class CustomHtmlParser(HTMLParser):
-    meta = list()
-    text = []
-    def handle_data(self, data):
-        data = data.strip()
-        for i in data:
-            if i not in IGNORE_CHARS:
-                if self.get_starttag_text()[1:-1] in NEWLINE_ELEMENTS:
-                    self.text += data + "\n"
-                else:
-                    self.text += " " + data
-            break
-  
-    def handle_starttag(self, tag, attrs):
-        for attr in attrs:
-            self.meta.append([tag, attr])
-        if tag in SEMANTIC_ELEMENTS:
-            self.text += "<" + tag + ">"
+class CustomHtmlTarget():
+    """A target for an HTML parser based on lxml. Fast."""
+    class Result():
+        """Class to hold results of parser"""
+        def __init__(self):
+            # The idea is that short_text will be used to train algorithms,
+            # but since it will be heavily cleaned up, it may become hard 
+            # to understand for human operator, so I'm also adding a more 
+            # understandable version in full_text
+            self.short_text: str = ""   # For text processing
+            self.full_text: str = ""   # For human comprehension of short_text
+            self.meta: list() = []
+            self.meta_words_of_interest: set() = set()
     
-    def handle_endtag(self, tag):
+    results = Result()
+    
+    def start(self, tag, attrs) -> None:
         if tag in SEMANTIC_ELEMENTS:
-            self.text += "</" + tag + ">"
-                
+            elem = "<" + tag + ">"
+            self.results.full_text += elem
+            self.results.short_text += elem
             
+        # Extract all useful words from tag attributes
+        attrs_list = []
+        for attr in attrs:
+            attrs_list.append({attr: attrs[attr]})
+            important_word_set = important_words(attrs[attr])
+            if important_word_set:
+                self.results.meta_words_of_interest = self.results.meta_words_of_interest.union(important_word_set)
+        self.results.meta.append(str((tag, attrs_list)))
+        
+    def end(self, tag) -> None:
+        if tag in SEMANTIC_ELEMENTS:
+            elem = "<" + tag + "/>"
+            self.results.full_text += elem
+            self.results.short_text += elem   
+        if tag in NEWLINE_ELEMENTS:
+            elem = " "
+            self.results.full_text += elem
+            self.results.short_text += elem
+    
+    def data(self, data) -> None:
+        for i in data:
+            if i.isalnum():
+                elem = data
+                if elem[0] == " ":
+                    elem = elem[1:]
+                short_elem = expand_contractions(elem)
+                self.results.full_text += elem + " "
+                # Use string.punctuation to remove ALL punctuation
+                # Want to keep: '$'
+                # punctuation = '!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+                # short_elem = short_elem.translate(str.maketrans('', '', punctuation))
+                short_elem = remove_stopwords(short_elem)
+                short_elem = lemmatize_text(short_elem)
+                self.results.short_text += short_elem + " "
+                break
+ 
+    def comment(self, text) -> None:
+        pass
+    
+    def close(self):
+        return self.results
+
 
 class HtmlCleaner():
-    def pretty_clean(self, html_str):
+    def pretty_clean(self, html_str: str) -> str:
         cleaner = Cleaner(style=True, 
                           inline_style=True, 
                           links=False, 
@@ -55,7 +100,7 @@ class HtmlCleaner():
         clean_html = cleaner.clean_html(html_str)
         return clean_html
     
-    def bare_html(self, html_str):
+    def bare_html(self, html_str: str) -> str:
         """Removes all comments, scripts, JS and style tags"""
         tags_to_remove = ["b", "strong", "i", "em", "mark", "small", "del", "ins", "sub", "sup"]
         cleaner = Cleaner(style=True, 
@@ -68,3 +113,43 @@ class HtmlCleaner():
                           forms=False)
         html_clean = cleaner.clean_html(html_str)
         return html_clean
+  
+    
+class MetaWordsImprover():
+    def __init__(self):
+        self.filename = "metawords.csv"
+        try:
+            f = open(self.filename, "r")
+        except IOError:
+            log.error("creating csv file")
+            with open(self.filename, "w") as f:
+                writer = csv.writer(f)
+                writer.writerow(["id", "count", "word"])
+                print("WROTE ROW")
+        finally:
+            f.close()
+            
+    def update_list(self, set_of_words: set()) -> None:
+        for word in set_of_words:
+            self._update_or_add_word(word, self.filename)
+                
+    def _update_or_add_word(self, word_to_update_or_add: str, file: typing.TextIO) -> None:
+        lines = []
+        with open(self.filename, "r") as file:
+            reader = csv.reader(file)
+            lines = list(reader)
+            word_updated = False
+            for line in lines:
+                if line[2] == word_to_update_or_add:
+                    count = line[1]
+                    count = str(int(count) + 1)
+                    line[1] = count
+                    word_updated = True
+            if word_updated is False:
+                lines.append(["id", 1, word_to_update_or_add])
+        
+        with open(self.filename, "w") as file:
+            writer = csv.writer(file)
+            writer.writerows(lines)
+        
+                
