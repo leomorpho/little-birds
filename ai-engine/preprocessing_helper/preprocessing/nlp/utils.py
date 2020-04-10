@@ -6,6 +6,7 @@ import logging
 from nltk.tokenize.toktok import ToktokTokenizer
 from nltk.corpus import words
 from .constants_en import CONTRACTION_MAP, META_WORDS_OF_INTEREST, USELESS_HTML_ATTRS_CONSTANTS
+from typing import Set
 
 NLTK_DICT = set(words.words())
 log = logging.getLogger()
@@ -51,24 +52,14 @@ def lemmatize_text(text: str) -> str:
     return text
 
 def important_words(data: str) -> set():
-    # Clean up data by extracting only words
-    data = re.split('\W', data)
-    data = set(filter(lambda x: x.isalpha(), data))
-    
-    # Split and words of the form: 'forSalePrice', 'VehicleList'
-    tmp_set = set()
-    for i in data:
-        # if I contains a capital, split it there
-        if not i.isupper() and not i.islower():
-            split_words = set(re.sub( r"([A-Z])", r" \1", i).split())
-            split_words_lower = set()
-            for t in split_words:
-                split_words_lower.add(t.lower())
-            tmp_set = tmp_set.union(split_words_lower)
-        else:
-            tmp_set.add(i)
-    data = tmp_set
-    
+    # Extract only words with letters
+    if not data.isalpha():
+        return
+
+    # Split words of the form: 'forSalePrice', 'VehicleList'
+    split_words: Set[str] = set(re.sub( r"([A-Z])", r" \1", data).split())
+    data = map(lambda x: x.lower(), split_words)
+
     data = set(filter(lambda x: len(x) > 2, data))
     data = data - set(stopword_list)
     data = data - USELESS_HTML_ATTRS_CONSTANTS
@@ -76,6 +67,7 @@ def important_words(data: str) -> set():
     data = set(map(lambda x: lemmatize_text(x), data))
     data = data & NLTK_DICT
 
-    log.debug(f"words in meta:  {data}")
+    if len(data) > 0:
+        log.debug(f"words in meta:  {data}")
     
     return data
