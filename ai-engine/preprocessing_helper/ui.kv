@@ -7,6 +7,35 @@ ProcessHtml:
     html_output: clean_html
     BoxLayout:
         orientation: "vertical"
+        ActionBar:
+            pos_hint: {'top':1}
+            ActionView:
+                use_separator: True
+                ActionPrevious:
+                    title: "CorpusBuilder"
+                    with_previous: False
+                ActionButton:
+                    text: "Re-run all saved"
+                    on_press: root.pipeline_on_saved_data()
+                ActionButton:
+                    text: "Run"
+                    on_press: root.pipeline() 
+                ActionButton:
+                    text: "Run+Save"
+                    on_press: root.pipeline_and_save() 
+                ActionGroup:
+                    text: "Tools"
+                    mode: "spinner"
+                    dropdown_width: "200sp"
+                    ActionButton:
+                        text: 'Pretty Print'
+                        on_press: root.pretty_clean()
+                    ActionButton:
+                        text: 'Escape html'
+                        on_press: root.escape()
+                    ActionButton:
+                        text: 'Unescape html and pprint'
+                        on_press: root.pprint_unescape()
         TextInput:
             id: dirty_html
             multiline: True
@@ -31,26 +60,7 @@ ProcessHtml:
                 auto_indent: False
                 cursor_blink: True
                 cursor_width: "2sp"
-                hint_text: "Enter a new metawords"
-        BoxLayout:
-            size_hint_y: 0.1
-            size_hint_max_y: 75
-            orientation: "horizontal"
-            Button:
-                text: "pretty clean"
-                on_press: root.pretty_clean()
-            Button:
-                text: "escape html"
-                on_press: root.escape()
-            Button:
-                text: "unescape html + pprint"
-                on_press: root.pprint_unescape()
-            Button:
-                text: "run pipeline on ALL saved data"
-                on_press: root.pipeline_on_saved_data()
-            Button:
-                text: "full pipeline"
-                on_press: root.pipeline()     
+                hint_text: "Enter a new metaword"
         ScrollView:
             do_scroll_x: False
             do_scroll_y: True
