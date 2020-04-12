@@ -22,7 +22,7 @@ METAWORDS_FILENAME = "metawords.csv"
 INPUT_FILEPATH = OUTPUT_FOLDER + "/" + SOURCE_HTML_FILENAME
 CORPUS_FILEPATH = OUTPUT_FOLDER + "/" + CORPUS_FILENAME
 
-def set_files_and_folders(paths: Dict[str, str]) -> None:
+def update_files_and_folders(paths: Dict[str, str]) -> None:
     """Setup files and folders names for calls from external parts (main, tests...)"""
     for path in paths:
         path = paths[path]
@@ -102,10 +102,13 @@ def pipeline_on_saved_data() -> None:
     for html in original_htmls:
         pipeline_and_save(html, "w")
 
-def pipeline_and_save(html_str: str, write_mode: str) -> None:
+def pipeline_and_save(html_str: str, write_mode :str="r") -> None:
     # Add button in UI to save html (with url) to DB. Should there also be an option 
     # to add words to the metawords (like handpicked categories). This option would 
     # need autocomplete to be sure not to create too many metawords
+    if html_str is None or html_str == "":
+        raise ValueError("pipeline cannot run on empty string")
+    
     result = call_pipeline(html_str)
     result_json = json.dumps(result, indent=4)
     
