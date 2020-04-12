@@ -55,3 +55,7 @@ Ideas: train a message encode to extract useful features (encoder)
     "parsedString": "Only words. (Metadata may extracted from html may have been appended, such as datetime)."
 }
 ```
+
+# TODO
+* Write tests!
+* Metawords don't need to keep track of what counts towards the count, since the pipeline can be re-run on all saved data to normalize count

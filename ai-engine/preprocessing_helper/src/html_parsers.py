@@ -118,9 +118,9 @@ class HtmlCleaner():
   
     
 class MetaWordsImprover():
-    def __init__(self):
-        self.dir_name = "metawords_data"
-        self.filename_metawords = self.dir_name + "/metawords.csv"
+    def __init__(self, output_folder, metawords_filename):
+        self.dir_name = output_folder
+        self.filename_metawords = self.dir_name + metawords_filename
         
         if os.path.isdir(self.dir_name) is False:
             os.mkdir(self.dir_name)

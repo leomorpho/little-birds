@@ -13,8 +13,8 @@ from kivy.uix.widget import Widget
 from kivy.uix.actionbar import ActionBar
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
-from preprocessing.html_parsers import HtmlCleaner
-from preprocessing.object_builder import pretty_clean, pprint_unescape, \
+from src.html_parsers import HtmlCleaner
+from src.object_builder import pretty_clean, pprint_unescape, \
     call_pipeline, pipeline_on_saved_data, pipeline_and_save
 
 
@@ -74,6 +74,7 @@ class ProcessHtml(BoxLayout):
             pipeline_on_saved_data()
         except Exception as err:
             self.html_output.text = str(err)
+            return
         self.html_output.text = "Done! Pipeline ran on all saved items"
         # pyperclip.copy(self.html_output.text)
         # pyperclip.paste()
@@ -85,7 +86,7 @@ class ProcessHtml(BoxLayout):
             return
         try:
             result = "Done! The following item was saved to file:\n\n"
-            result += pipeline_and_save(self.html_input.text)
+            result += pipeline_and_save(self.html_input.text, "a+")
             self.html_output.text = result
         except Exception as err:
             self.html_output.text = str(err)
