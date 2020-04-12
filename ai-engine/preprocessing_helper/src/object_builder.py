@@ -3,6 +3,7 @@ import html
 import os
 import logging
 import json
+import config
 from src.html_parsers import HtmlCleaner, CustomHtmlTarget, MetaWordsImprover
 from bs4 import BeautifulSoup as bs
 from typing import List, Dict
@@ -10,31 +11,52 @@ from lxml import etree
 from .nlp.constants_en import META_WORDS_OF_INTEREST
 
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(config.LOG_LEVEL)
 
 cleaner = HtmlCleaner()
 
-OUTPUT_FOLDER = "output_corpus"
-CORPUS_FILENAME = "corpus.jsonl" # output of program
-SOURCE_HTML_FILENAME = "source_html.json" # original input of program
-METAWORDS_FILENAME = "metawords.csv"
+# Keys of the filenames dictionanry holding all of the filenames constants
+OUTPUT_FOLDER_KEY = "output_folder_key"
+CORPUS_FILENAME_KEY = "corpus_filename_key"
+SOURCE_HTML_FILENAME_KEY = "source_html_filename_key"
+METAWORDS_FILENAME_KEY = "metawords_filename_key"
 
-SOURCE_HTML_FILEPATH = OUTPUT_FOLDER + "/" + SOURCE_HTML_FILENAME
-CORPUS_FILEPATH = OUTPUT_FOLDER + "/" + CORPUS_FILENAME
-METAWORDS_FILEPATH = OUTPUT_FOLDER + "/" + METAWORDS_FILENAME
+# Filenames dictionnary holding all of the filenames constants.
+# The set values are defaults and can be overriden.
+filenames = {OUTPUT_FOLDER_KEY: "output",
+            CORPUS_FILENAME_KEY: "corpus.jsonl", # output of program
+            SOURCE_HTML_FILENAME_KEY: "source_html.json", # original input of program
+            METAWORDS_FILENAME_KEY: "metawords.csv"} # words form html tags
+
+SOURCE_HTML_FILEPATH = filenames[OUTPUT_FOLDER_KEY] + \
+    "/" + filenames[SOURCE_HTML_FILENAME_KEY]
+CORPUS_FILEPATH = filenames[OUTPUT_FOLDER_KEY] + \
+    "/" + filenames[CORPUS_FILENAME_KEY]
+METAWORDS_FILEPATH = filenames[OUTPUT_FOLDER_KEY] + \
+    "/" + filenames[METAWORDS_FILENAME_KEY]
  
 def update_files_and_folders(paths: Dict[str, str]) -> None:
     """Setup files and folders names for calls from external parts (main, tests...)"""
     for key, value in paths.items():
-        global OUTPUT_FOLDER
-        if key == OUTPUT_FOLDER:
-            OUTPUT_FOLDER = value
-        print("**********************************")
-        print("**********************************")
-        print("**********************************")
-        print("**********************************")
-        log.debug(f"New output directory set: {OUTPUT_FOLDER}")
-    
+        global filenames
+        if filenames[key]:
+            filenames[key] = value
+    global SOURCE_HTML_FILEPATH, CORPUS_FILEPATH, METAWORDS_FILEPATH
+    SOURCE_HTML_FILEPATH = filenames[OUTPUT_FOLDER_KEY] + \
+        "/" + filenames[SOURCE_HTML_FILENAME_KEY]
+    CORPUS_FILEPATH = filenames[OUTPUT_FOLDER_KEY] + \
+        "/" + filenames[CORPUS_FILENAME_KEY]
+    METAWORDS_FILEPATH = filenames[OUTPUT_FOLDER_KEY] + \
+        "/" + filenames[METAWORDS_FILENAME_KEY]
+        
+    log.debug(f"{OUTPUT_FOLDER_KEY} set to {filenames[OUTPUT_FOLDER_KEY]}")
+    log.debug(f"SOURCE_HTML_FILEPATH: {SOURCE_HTML_FILEPATH}")
+    log.debug(f"CORPUS_FILEPATH: {CORPUS_FILEPATH}")
+    log.debug(f"METAWORDS_FILEPATH: {METAWORDS_FILEPATH}")
+
+def get_filepaths_list() -> List[str]:
+    """Returns a list of all filepaths that are written to"""
+    return [SOURCE_HTML_FILEPATH, CORPUS_FILEPATH, METAWORDS_FILEPATH]
 
 def pretty_clean(html_str: str) -> str:
     clean_html = cleaner.pretty_clean(html_str)
@@ -47,6 +69,7 @@ def pprint_unescape(escaped_html_str: str) -> str:
     return soup.prettify()
     
 def call_pipeline(html_str: str) -> str:
+    log.info("Enter call pipeline")
     parser = etree.HTMLParser(
         target=CustomHtmlTarget(), 
         remove_blank_text=True,
@@ -75,7 +98,7 @@ def call_pipeline(html_str: str) -> str:
     
     meta_words_of_interest = list(meta_words_of_interest & META_WORDS_OF_INTEREST)
     meta = result.meta
-    
+        
     obj = {
         "id": uuid_str,
         "text": short_text,
@@ -86,10 +109,11 @@ def call_pipeline(html_str: str) -> str:
         "labels": [],
         "html": raw_html
     }
+    log.info("Exit call pipeline")
     return obj
 
 def clear_all_files() -> None:
-    files = [CORPUS_FILENAME, METAWORDS_FILENAME]
+    files = [SOURCE_HTML_FILEPATH, CORPUS_FILEPATH, METAWORDS_FILEPATH]
     for f in files:
         open(f, "w").close()
     
@@ -117,22 +141,27 @@ def pipeline_and_save(html_str: str, write_mode :str="r") -> None:
     if html_str is None or html_str == "":
         raise ValueError("pipeline cannot run on empty string")
     
+    # output folder must be set before calling pipeline because metawords 
+    # are written to it.
+    if os.path.isdir(filenames["output_folder_key"]) is False:
+        os.mkdir(filenames["output_folder_key"])
+        
     result = call_pipeline(html_str)
     result_json = json.dumps(result, indent=4)
     
-    if os.path.isdir(OUTPUT_FOLDER) is False:
-        os.mkdir(OUTPUT_FOLDER)
     if os.path.exists(CORPUS_FILEPATH) is False:
-        log.error("creating corpus file")
+        log.info("creating corpus file")
         open(CORPUS_FILEPATH, "w").close()
     if os.path.exists(SOURCE_HTML_FILEPATH) is False:
-        log.error("creating original html input file")
+        log.info("creating source html file")
         open(SOURCE_HTML_FILEPATH, "w").close()
     
     # Do not overwrite SOURCE_HTML_FILEPATH or all original html data will be LOST!
     with open(SOURCE_HTML_FILEPATH, "a+") as f:
         f.write(html.escape(html_str))
+        log.info("source html saved to file")
     with open(CORPUS_FILEPATH, write_mode) as f:
         f.write(result_json)
+        log.info("processed corpus saved to file")
     
     return result_json

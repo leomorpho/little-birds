@@ -3,12 +3,13 @@ import csv
 import typing
 import logging 
 import os
+import config
 from html.parser import HTMLParser
 from lxml.html.clean import Cleaner
 from .nlp.utils import remove_stopwords, lemmatize_text, important_words, expand_contractions
 
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(config.LOG_LEVEL)
 
 # Elements that require text to have a new line ("\n") inserted
 NEWLINE_ELEMENTS = {"address", "article", "aside", "blockquote",
@@ -29,7 +30,7 @@ SEMANTIC_ELEMENTS = {"a", "title", "cite", "code", "data", "dfn", "kbd",
 
 class CustomHtmlTarget():
     """A target for an HTML parser based on lxml. Fast."""
-    class Result():
+    class Results():
         """Class to hold results of parser"""
         def __init__(self):
             # The idea is that short_text will be used to train algorithms,
@@ -41,7 +42,9 @@ class CustomHtmlTarget():
             self.meta: list() = []
             self.meta_words_of_interest: set() = set()
     
-    results = Result()
+    def __init__(self):
+        super().__init__()
+        self.results = self.Results()
     
     def start(self, tag, attrs) -> None:
         if tag in SEMANTIC_ELEMENTS:
@@ -57,7 +60,8 @@ class CustomHtmlTarget():
             if important_word_set:
                 self.results.meta_words_of_interest = \
                     self.results.meta_words_of_interest.union(important_word_set)
-        self.results.meta.append(str((tag, attrs_list)))
+        if len(attrs_list) > 0:
+            self.results.meta.append(str((tag, attrs_list)))
         
     def end(self, tag) -> None:
         if tag in SEMANTIC_ELEMENTS:
@@ -79,8 +83,8 @@ class CustomHtmlTarget():
                 self.results.full_text += elem + " "
                 # Use string.punctuation to remove ALL punctuation
                 # Want to keep: '$'
-                # punctuation = '!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
-                # short_elem = short_elem.translate(str.maketrans('', '', punctuation))
+                punctuation = '!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+                short_elem = short_elem.translate(str.maketrans('', '', punctuation))
                 short_elem = remove_stopwords(short_elem)
                 short_elem = lemmatize_text(short_elem)
                 self.results.short_text += short_elem + " "
@@ -121,7 +125,7 @@ class MetaWordsImprover():
     def __init__(self, metawords_filepath):
         self.filename_metawords = metawords_filepath
         if os.path.exists(self.filename_metawords) is False:
-            log.error("creating csv file")
+            log.info("creating csv file")
             with open(self.filename_metawords, "w") as f:
                 writer = csv.writer(f)
                 writer.writerow(["id", "count", "word"])

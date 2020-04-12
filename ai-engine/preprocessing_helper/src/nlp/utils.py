@@ -3,6 +3,7 @@ import spacy
 import re
 import sys
 import logging
+import config
 from nltk.tokenize.toktok import ToktokTokenizer
 from nltk.corpus import words
 from .constants_en import CONTRACTION_MAP, META_WORDS_OF_INTEREST, USELESS_HTML_ATTRS_CONSTANTS
@@ -10,7 +11,7 @@ from typing import Set
 
 NLTK_DICT = set(words.words())
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(config.LOG_LEVEL)
 
 
 stopword_list = nltk.corpus.stopwords.words('english')
@@ -47,6 +48,7 @@ def remove_stopwords(text: str, is_lower_case=False) -> str:
     return filtered_text
 
 def lemmatize_text(text: str) -> str:
+    # Do not lemmatize numbers or prices
     text = nlp(text)
     text = ' '.join([word.lemma_ if word.lemma_ != '-PRON-' else word.text for word in text])
     return text
@@ -67,7 +69,4 @@ def important_words(data: str) -> set():
     data = set(map(lambda x: lemmatize_text(x), data))
     data = data & NLTK_DICT
 
-    if len(data) > 0:
-        log.debug(f"words in meta:  {data}")
-    
     return data
