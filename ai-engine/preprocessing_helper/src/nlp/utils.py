@@ -7,7 +7,7 @@ import config
 from nltk.tokenize.toktok import ToktokTokenizer
 from nltk.corpus import words
 from .constants_en import CONTRACTION_MAP, META_WORDS_OF_INTEREST, USELESS_HTML_ATTRS_CONSTANTS
-from typing import Set
+from typing import Set, List
 
 NLTK_DICT = set(words.words())
 log = logging.getLogger()
@@ -70,3 +70,47 @@ def important_words(data: str) -> set():
     data = data & NLTK_DICT
 
     return data
+
+def nlp_pipeline(sentence:List[str], 
+                 split_words:bool=False, 
+                 sequence:bool=True
+                 ) -> str:
+    """A full NLP pipeline to run on a string
+    :param sentence: the sentence to be processed
+    :type  sentence: str
+    :param split_words: split words of the form splitWords to 'split words'
+    :type  split_words: bool
+    :param sequence: whether the supplied sentence must be treated as a sequence or a set
+    :type  sequence: bool
+    """
+    # NOTE: do not add space between kept punctuation and its neighbours, 
+    # for example $54, not $ 54
+        
+    if split_words:
+        sentence = split_words(sentence)
+    
+    # for word in sentence:
+    #     pass
+        
+    #     # Remove punctuation
+    #     # Remove stopwords
+    #     # Expand contractions
+        
+    #     # Lemmatize
+    #     # Verify word is in dictionnary if not number or other symbol
+    
+    return sentence
+
+def split_words(sentence: List[str]) -> List[str]:
+    """Splits words of the form helloThere, WhatIsUp to 'hello there' and 'what is up'
+    :param word: a word that may need splitting
+    :type  word: str
+    """
+    new_sentence: List[str] = []
+    for word in sentence:
+        split_words = list(re.sub( r"([A-Z])|(_)", r" \1", word).split())
+        if len(split_words) > 1:
+            new_sentence.extend(split_words)
+        else:
+            new_sentence.append(word)
+    return new_sentence

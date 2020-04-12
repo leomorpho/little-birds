@@ -54,7 +54,7 @@ class TestPipelineAndSave():
         for path in FILEPATHS:
             assert(os.path.exists(path) is False)
     
-    def test_well_formed_html(self, manage_filepaths):
+    def test_well_formed_html_disk(self, manage_filepaths):
         self.verify_all_files_gone()
         raw_html_lines = open_test_data(TESTDATA_FILEPATH)
         for raw_html_line in raw_html_lines:
@@ -70,43 +70,13 @@ class TestPipelineAndSave():
         with pytest.raises(ValueError):
             _ = pipeline_and_save("", "w")
         self.verify_cleared_files_empty()
-        
-    def test_simple_html1(self, manage_filepaths):
-        self.verify_all_files_gone()
-        raw_html = "hello"
-        result = pipeline_and_save(raw_html, "w")
-        result = json.loads(result)
-        log.debug(json.dumps(result, indent=4))
-        self.verify_files_were_created()
-        clear_all_files()
-        self.verify_cleared_files_empty()
-        
-    def test_simple_html2(self, manage_filepaths):
-        self.verify_all_files_gone()
-        raw_html = "goodbye"
-        result = pipeline_and_save(raw_html, "w")
-        result = json.loads(result)
-        log.debug(json.dumps(result, indent=4))
-        assert(result is not None)
-        assert(result["id"] is not None)
-        assert(result["text"] == raw_html)
-        assert(result["full_text"] == raw_html)
-        assert(result["id"] != "")
-        assert(len(result["meta_words_of_interest"]) == 0)
-        assert(len(result["meta"]) == 0)
-        assert(len(result["annotation_approver"]) == 0)
-        assert(len(result["labels"]) == 0)
-        assert(result["html"]) == html.escape(cleaner.bare_html(raw_html))
-        self.verify_files_were_created()
-        clear_all_files()
-        self.verify_cleared_files_empty()
     
     class TestCase():
         def __init__(self, 
                      test_case_name,
                      raw_html, 
                      text, 
-                     full_text, 
+                     unprocessed_text, 
                      meta_words_of_interest=[],
                      meta=[],
                      annotation_approver=[],
@@ -114,7 +84,7 @@ class TestPipelineAndSave():
             self.test_case_name = test_case_name
             self.raw_html = raw_html
             self.text = text
-            self.full_text = full_text
+            self.unprocessed_text = unprocessed_text
             self.escaped_html_src = html.escape(cleaner.bare_html(raw_html))
             self.meta_words_of_interest = meta_words_of_interest
             self.meta = meta
@@ -122,30 +92,51 @@ class TestPipelineAndSave():
             self.labels = labels
             
             
-    table_test = [TestCase( "price",
-                            raw_html='!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~price: $42',
+    table_test = [TestCase("price",
+                            raw_html='$42',
                             text="$42",
-                            full_text="$42"),
+                            unprocessed_text="$42"),
+                  TestCase("price with punctuation",
+                            raw_html='!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~price: $42',
+                            text="price $42",
+                            unprocessed_text="price $42"),
                   TestCase("simple word",
                             raw_html="hello",
                             text="hello",
-                            full_text="hello"),
+                            unprocessed_text="hello"),
                   TestCase("non-words",
                             raw_html="uanjrgd oierjg",
                             text="",
-                            full_text=""),
+                            unprocessed_text=""),
                   TestCase("numbers",
                             raw_html="42",
                             text="42",
-                            full_text="42"),
+                            unprocessed_text="42"),
                   TestCase("numbers",
                             raw_html="43 42",
                             text="43 42",
-                            full_text="43 42"),
+                            unprocessed_text="43 42"),
+                  TestCase("simple div",
+                            raw_html="<div>simple</div>",
+                            text="simple",
+                            unprocessed_text="simple"),
+                  TestCase("simple div with non-words",
+                            raw_html="<div>simple negfn-winkjsrgnds</div>",
+                            text="simple",
+                            unprocessed_text="simple"),
+                  TestCase("contraction",
+                            raw_html="can't shan't won't don't",
+                            text="can not shall not will not do not",
+                            unprocessed_text="can't shan't won't don't"),
+                  TestCase("meta words",
+                            raw_html="<div class=\"aSmallTree\">is furious</div>",
+                            text="is furious",
+                            unprocessed_text="is furious",
+                            meta_words_of_interest=["small", "tree"]),
                   ]  
    
     @pytest.mark.parametrize("obj", table_test)
-    def test_cases(self, obj, manage_filepaths):
+    def test_html_cases(self, obj, manage_filepaths):
         self.verify_all_files_gone()
         log.info(f"### TESTCASE {obj.test_case_name}: \"{obj.raw_html}\"")
         result = pipeline_and_save(obj.raw_html, "w")
@@ -153,10 +144,11 @@ class TestPipelineAndSave():
         result = json.loads(result)
         assert(result["id"] is not None)
         assert(result["text"] == obj.text)
-        assert(result["full_text"] == obj.full_text)
+        assert(result["full_text"] == obj.unprocessed_text)
         assert(result["id"] != "")
-        assert(len(result["meta_words_of_interest"]) == len(obj.meta_words_of_interest))
-        assert(len(result["meta"]) == len(obj.meta))
+        for word in result["meta_words_of_interest"]:
+            assert(word in obj.meta_words_of_interest)
+        # assert(len(result["meta"]) == len(obj.meta))
         assert(len(result["annotation_approver"]) == len(obj.annotation_approver))
         assert(len(result["labels"]) == len(obj.labels))
         assert(result["html"] == obj.escaped_html_src)

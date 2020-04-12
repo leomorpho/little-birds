@@ -6,7 +6,7 @@ import os
 import config
 from html.parser import HTMLParser
 from lxml.html.clean import Cleaner
-from .nlp.utils import remove_stopwords, lemmatize_text, important_words, expand_contractions
+from .nlp.utils import remove_stopwords, lemmatize_text, important_words, expand_contractions, nlp_pipeline
 
 log = logging.getLogger()
 log.setLevel(config.LOG_LEVEL)
@@ -56,7 +56,7 @@ class CustomHtmlTarget():
         attrs_list = []
         for attr in attrs:
             attrs_list.append({attr: attrs[attr]})
-            important_word_set = important_words(attrs[attr])
+            important_word_set = nlp_pipeline(attrs[attr].split())
             if important_word_set:
                 self.results.meta_words_of_interest = \
                     self.results.meta_words_of_interest.union(important_word_set)
@@ -79,15 +79,17 @@ class CustomHtmlTarget():
                 elem = data
                 if elem[0] == " ":
                     elem = elem[1:]
-                short_elem = expand_contractions(elem)
                 self.results.full_text += elem + " "
+                # short_elem = remove_stopwords(elem)
                 # Use string.punctuation to remove ALL punctuation
                 # Want to keep: '$'
-                punctuation = '!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
-                short_elem = short_elem.translate(str.maketrans('', '', punctuation))
-                short_elem = remove_stopwords(short_elem)
-                short_elem = lemmatize_text(short_elem)
-                self.results.short_text += short_elem + " "
+                # punctuation = '!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+                # elem = elem.translate(str.maketrans('', '', punctuation))
+                # elem = expand_contractions(elem)
+                # elem = lemmatize_text(elem)
+                elem = nlp_pipeline(elem.split())
+                log.error(elem)
+                self.results.short_text += elem + " "
                 break
  
     def comment(self, text) -> None:
