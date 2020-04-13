@@ -86,8 +86,9 @@ def call_pipeline(html_str: str) -> str:
     raw_html = html.escape(" ".join(raw_html.split()))
     
     uuid_str = str(uuid.uuid4())
-    short_text = result.short_text.strip()
-    full_text = result.full_text.strip()
+    log.info("short_text: " + str(result.short_text))
+    short_text = " ".join(result.short_text)
+    full_text = " ".join(result.full_text)
     
     # Persist words of interest to DB to sort them by prevalence and select new good ones
     # to add to META_WORDS_OF_INTEREST and USELESS_HTML_ATTRS_CONSTANTS

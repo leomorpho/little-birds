@@ -6,6 +6,7 @@ import os
 import config
 from html.parser import HTMLParser
 from lxml.html.clean import Cleaner
+from typing import List
 from .nlp.utils import remove_stopwords, lemmatize_text, important_words, expand_contractions, nlp_pipeline
 
 log = logging.getLogger()
@@ -37,8 +38,8 @@ class CustomHtmlTarget():
             # but since it will be heavily cleaned up, it may become hard 
             # to understand for human operator, so I'm also adding a more 
             # understandable version in full_text
-            self.short_text: str = ""   # For text processing
-            self.full_text: str = ""   # For human comprehension of short_text
+            self.short_text: List[str] = []   # For text processing
+            self.full_text: List[str] = []    # For human comprehension of short_text
             self.meta: list() = []
             self.meta_words_of_interest: set() = set()
     
@@ -49,8 +50,9 @@ class CustomHtmlTarget():
     def start(self, tag, attrs) -> None:
         if tag in SEMANTIC_ELEMENTS:
             elem = "<" + tag + ">"
-            self.results.full_text += elem
-            self.results.short_text += elem
+            log.error("****####$$$$$$$$@@@@@@@^^^^^^^^^^**&^@#$%^&^%$%^%%%%%%%%%%%%%%" + elem)
+            self.results.full_text.append(elem)
+            self.results.short_text.append(elem)
             
         # Extract all useful words from tag attributes
         attrs_list = []
@@ -65,13 +67,13 @@ class CustomHtmlTarget():
         
     def end(self, tag) -> None:
         if tag in SEMANTIC_ELEMENTS:
-            elem = "<" + tag + "/>"
-            self.results.full_text += elem
-            self.results.short_text += elem   
+            elem = "</" + tag + ">"
+            self.results.full_text.append(elem)
+            self.results.short_text.append(elem)  
         if tag in NEWLINE_ELEMENTS:
-            elem = " "
-            self.results.full_text += elem
-            self.results.short_text += elem
+            elem = "<br/>"
+            self.results.full_text.append(elem)
+            self.results.short_text.append(elem)
     
     def data(self, data) -> None:
         for i in data:
@@ -79,7 +81,7 @@ class CustomHtmlTarget():
                 elem = data
                 if elem[0] == " ":
                     elem = elem[1:]
-                self.results.full_text += elem + " "
+                self.results.full_text.append(elem)
                 # short_elem = remove_stopwords(elem)
                 # Use string.punctuation to remove ALL punctuation
                 # Want to keep: '$'
@@ -88,14 +90,16 @@ class CustomHtmlTarget():
                 # elem = expand_contractions(elem)
                 # elem = lemmatize_text(elem)
                 elem = nlp_pipeline(elem.split())
-                log.error(elem)
-                self.results.short_text += elem + " "
+                log.error("html_parser:" + str(elem))
+                self.results.short_text.extend(elem)
+                log.error("short_text in parser:" + str(self.results.short_text))
                 break
  
     def comment(self, text) -> None:
         pass
     
     def close(self):
+        log.error("short_text in close of parser: " + str(self.results.short_text))
         return self.results
 
 

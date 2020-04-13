@@ -91,13 +91,14 @@ class TestPipelineAndSave():
             self.annotation_approver = annotation_approver
             self.labels = labels
             
-            
+     
+    # <br/> is added if a tag is a newline tag (div, article...)       
     table_test = [TestCase("price",
-                            raw_html='$42',
-                            text="$42",
-                            unprocessed_text="$42"),
+                            raw_html='<div>$42</div>', # divs will be removed
+                            text="$42 <br/>",
+                            unprocessed_text="$42 <br/>"),
                   TestCase("price with punctuation",
-                            raw_html='!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~price: $42',
+                            raw_html='!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~price: $42', # time won't be removed
                             text="price $42",
                             unprocessed_text="price $42"),
                   TestCase("simple word",
@@ -118,20 +119,20 @@ class TestPipelineAndSave():
                             unprocessed_text="43 42"),
                   TestCase("simple div",
                             raw_html="<div>simple</div>",
-                            text="simple",
-                            unprocessed_text="simple"),
+                            text="simple <br/>",
+                            unprocessed_text="simple <br/>"),
                   TestCase("simple div with non-words",
                             raw_html="<div>simple negfn-winkjsrgnds</div>",
-                            text="simple",
-                            unprocessed_text="simple"),
+                            text="simple <br/>",
+                            unprocessed_text="simple <br/>"),
                   TestCase("contraction",
-                            raw_html="can't shan't won't don't",
-                            text="can not shall not will not do not",
-                            unprocessed_text="can't shan't won't don't"),
+                            raw_html="<time>can't shan't won't don't</time>",
+                            text="<time> can not shall not will not do not </time>",
+                            unprocessed_text="<time> can't shan't won't don't </time>"),
                   TestCase("meta words",
-                            raw_html="<div class=\"aSmallTree\">is furious</div>",
-                            text="is furious",
-                            unprocessed_text="is furious",
+                            raw_html="<time class=\"aSmallTree\">is furious</time>",
+                            text="<time> is furious </time>",
+                            unprocessed_text="<time> is furious </time>",
                             meta_words_of_interest=["small", "tree"]),
                   ]  
    

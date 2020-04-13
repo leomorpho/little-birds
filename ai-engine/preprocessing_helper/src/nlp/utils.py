@@ -4,10 +4,12 @@ import re
 import sys
 import logging
 import config
+import string
 from nltk.tokenize.toktok import ToktokTokenizer
 from nltk.corpus import words
+import enchant
 from .constants_en import CONTRACTION_MAP, META_WORDS_OF_INTEREST, USELESS_HTML_ATTRS_CONSTANTS
-from typing import Set, List
+from typing import Set, List, Optional
 
 NLTK_DICT = set(words.words())
 log = logging.getLogger()
@@ -20,6 +22,7 @@ stopword_list.remove('not')
 stopword_list.remove('to')
 tokenizer = ToktokTokenizer()
 nlp = spacy.load('en_core_web_sm', parse=True, tag=True, entity=True)
+dictionnary = enchant.Dict()
 
 def expand_contractions(text: str, contraction_mapping=CONTRACTION_MAP) -> str: 
     contractions_pattern = re.compile('({})'.format(
@@ -72,34 +75,50 @@ def important_words(data: str) -> set():
     return data
 
 def nlp_pipeline(sentence:List[str], 
-                 split_words:bool=False, 
+                 do_split_words:bool=False, 
                  sequence:bool=True
                  ) -> str:
     """A full NLP pipeline to run on a string
     :param sentence: the sentence to be processed
     :type  sentence: str
-    :param split_words: split words of the form splitWords to 'split words'
-    :type  split_words: bool
+    :param do_split_words: split words of the form splitWords to 'split words'
+    :type  do_split_words: bool
     :param sequence: whether the supplied sentence must be treated as a sequence or a set
     :type  sequence: bool
     """
     # NOTE: do not add space between kept punctuation and its neighbours, 
     # for example $54, not $ 54
         
-    if split_words:
-        sentence = split_words(sentence)
+    # (1) Run processes that change the length of the sentence
+    # TODO: Not efficient, but let's fix that later...
+    # if do_split_words:
+    #     sentence = split_words(sentence)
+    # # Do not remove anything if it is an html tag
+    sentence = remove_unwanted_characters(sentence)
     
-    # for word in sentence:
-    #     pass
-        
-    #     # Remove punctuation
+    # # (2) Run processes that run in-place in the list (and do not change its length)
+    # for key, word in enumerate(sentence):
+    #     # strip spaces
+    #     sentence[key] = word.strip()
     #     # Remove stopwords
+    #     if word in stopword_list:
+    #         sentence[key] = ""
     #     # Expand contractions
-        
+    #     sentence[key] = expand_contractions(word)
     #     # Lemmatize
     #     # Verify word is in dictionnary if not number or other symbol
+    #     if dictionnary.check(word) is False:
+    #         sentence[key] = ""
+        # Remove empty html elements
+    
+    # # Remove all empty elements
+    sentence = [word for word in sentence if " " not in word]
+    # log.info("nlp_pipeline: " + str(sentence))
     
     return sentence
+
+def structural_pipeline():
+    pass
 
 def split_words(sentence: List[str]) -> List[str]:
     """Splits words of the form helloThere, WhatIsUp to 'hello there' and 'what is up'
@@ -108,9 +127,27 @@ def split_words(sentence: List[str]) -> List[str]:
     """
     new_sentence: List[str] = []
     for word in sentence:
-        split_words = list(re.sub( r"([A-Z])|(_)", r" \1", word).split())
+        split_words = []
+        if word[0] != "<" and word[-1] != ">":
+            split_words = list(re.sub( r"([A-Z])|(_)", r" \1", word).split())
         if len(split_words) > 1:
             new_sentence.extend(split_words)
         else:
+            new_sentence.append(word)
+    return new_sentence
+
+def remove_unwanted_characters(sentence:List[str], 
+                               some_acceptable:Optional[list]=None) -> List[str]:
+    """Removes all characters except for the ones in the acceptable list"""
+    # Update unwanted chars
+    unwanted: str = string.punctuation
+    if some_acceptable:
+        unwanted = str(set(unwanted) - set(some_acceptable))
+   
+    new_sentence: List[str] = []
+    for word in sentence:
+        if word[0] != "<" and word[-1] != ">":
+            word = word.translate(str.maketrans('', '', unwanted))
+        if word != [""]:
             new_sentence.append(word)
     return new_sentence
