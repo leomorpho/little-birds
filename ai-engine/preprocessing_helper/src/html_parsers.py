@@ -7,7 +7,7 @@ import config
 from html.parser import HTMLParser
 from lxml.html.clean import Cleaner
 from typing import List
-from .nlp.utils import remove_stopwords, lemmatize_text, important_words, expand_contractions, nlp_pipeline
+from .nlp.nlp import nlp_pipeline
 
 log = logging.getLogger()
 log.setLevel(config.LOG_LEVEL)
