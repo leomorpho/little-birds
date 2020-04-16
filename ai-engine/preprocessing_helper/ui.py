@@ -13,7 +13,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.actionbar import ActionBar
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
-from src.html_parsers import HtmlCleaner
+from src.parser.html import HtmlCleaner
 from src.object_builder import pretty_clean, pprint_unescape, \
     call_pipeline, pipeline_on_saved_data, pipeline_and_save
 

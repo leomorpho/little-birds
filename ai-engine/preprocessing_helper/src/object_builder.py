@@ -4,7 +4,8 @@ import os
 import logging
 import json
 import config
-from src.html_parsers import HtmlCleaner, CustomHtmlTarget, MetaWordsImprover
+from src.parser.html import HtmlCleaner, CustomHtmlTarget
+from src.iadp.csv_db import MetaWordsImprover
 from bs4 import BeautifulSoup as bs
 from typing import List, Dict
 from lxml import etree

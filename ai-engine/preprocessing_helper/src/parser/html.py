@@ -7,7 +7,7 @@ import config
 from html.parser import HTMLParser
 from lxml.html.clean import Cleaner
 from typing import List
-from .nlp.nlp import nlp_pipeline
+from ..nlp.nlp import preprocessing_pipeline
 
 log = logging.getLogger()
 log.setLevel(config.LOG_LEVEL)
@@ -58,7 +58,7 @@ class CustomHtmlTarget():
         attrs_list = []
         for attr in attrs:
             attrs_list.append({attr: attrs[attr]})
-            important_word_set = nlp_pipeline(attrs[attr], html_meta=True)
+            important_word_set = preprocessing_pipeline(attrs[attr], html_meta=True)
             if important_word_set:
                 self.results.meta_words_of_interest = \
                     self.results.meta_words_of_interest.union(important_word_set)
@@ -89,7 +89,7 @@ class CustomHtmlTarget():
                 # elem = elem.translate(str.maketrans('', '', punctuation))
                 # elem = expand_contractions(elem)
                 # elem = lemmatize_text(elem)
-                elem = nlp_pipeline(elem, html_meta=False)
+                elem = preprocessing_pipeline(elem, html_meta=False)
                 log.error("html_parser:" + str(elem))
                 self.results.short_text.extend(elem)
                 log.error("short_text in parser:" + str(self.results.short_text))
@@ -125,38 +125,4 @@ class HtmlCleaner():
                           forms=False)
         html_clean = cleaner.clean_html(html_str)
         return html_clean
-  
-    
-class MetaWordsImprover():
-    def __init__(self, metawords_filepath):
-        self.filename_metawords = metawords_filepath
-        if os.path.exists(self.filename_metawords) is False:
-            log.info("creating csv file")
-            with open(self.filename_metawords, "w") as f:
-                writer = csv.writer(f)
-                writer.writerow(["id", "count", "word"])
-  
-    def update_list(self, set_of_words: set()) -> None:
-        for word in set_of_words:
-            self._update_or_add_word(word, self.filename_metawords)
-                
-    def _update_or_add_word(self, word_to_update_or_add: str, file: typing.TextIO) -> None:
-        lines = []
-        with open(self.filename_metawords, "r") as file:
-            reader = csv.reader(file)
-            lines = list(reader)
-            word_updated = False
-            for line in lines:
-                if line[2] == word_to_update_or_add:
-                    count = line[1]
-                    count = str(int(count) + 1)
-                    line[1] = count
-                    word_updated = True
-            if word_updated is False:
-                lines.append(["id", 1, word_to_update_or_add])
-        
-        with open(self.filename_metawords, "w") as file:
-            writer = csv.writer(file)
-            writer.writerows(lines)
-        
                 

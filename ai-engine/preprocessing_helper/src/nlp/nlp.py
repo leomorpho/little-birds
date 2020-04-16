@@ -151,6 +151,9 @@ def split_word(word:str, str_type):
     # Capitals: "(?=[A-Z])"
     # Capitals and dot and underscore: "(?=[A-Z])|[_\.]"
     
+    # TODO: extract regex constants to somewhere else. Also, move this parametrization
+    # higher up, such that custom regex can be passed (or other categories?). I don't
+    # know, just see which one works.
     regex_dict = {
         "html_meta": r"(?=[A-Z])|[_\. ]",
         "punctuation": r"(?=[\.,-])"
