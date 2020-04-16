@@ -58,8 +58,8 @@ def lemmatize_text(text: str) -> str:
 
 #     return data
 
-def nlp_pipeline(sentence:List[str], 
-                 do_split:bool=False, 
+def nlp_pipeline(sentence:str, 
+                 html_meta:bool=False, 
                  sequence:bool=True
                  ) -> str:
     """A full NLP pipeline to run on a string
@@ -77,7 +77,7 @@ def nlp_pipeline(sentence:List[str],
     # TODO: Not efficient, but let's fix that later...
 
     # Split and remove words (concatenations, contractions, stop words...)
-    sentence = restructure(sentence, do_split)
+    sentence: List[str] = restructure(sentence, html_meta=True)
     
     # # (2) Run processes that run in-place in the list (and do not change its length)
     # for key, word in enumerate(sentence):
@@ -99,50 +99,81 @@ def nlp_pipeline(sentence:List[str],
     return sentence
     
 
-def restructure(sentence:List[str], do_split:bool=False) -> List[str]:
+def restructure(sentence:str, html_meta:bool=False) -> List[str]:
     """Split contracted words and elimites unwanted ones
     :param word: a word that may need splitting
     :type  word: str
+    :param html_meta: determines if html classes and the like have to be 
+    parsed to yield useful data. Not needed for regular text. 
+    Example: "<cite class="somethingThatNeedsToBeSplit"></cite>"
     """
-    new_sentence: List[str] = []
+    sentence: List[str] = sentence.split()
     
+    # Can't change the length of a list while iterating over it, so create a new one.
+    parsed_sentence: List[str] = []
+    
+    # TODO: Lots of loops here, it's inneficient, but it will do for now...
     for word in sentence:
-        restructure: List[str] = []
+        restructured: List[str] = []
+        # If the word is NOT an html tag
         if word[0] != "<" and word[-1] != ">":
             # (1) Split if required
-            if do_split:
-                split_word = split_word(word)
-                restructure = restructure + split_word
-            restructure = restructure + word
-            # (2) Expand contracted words
-            # restructure = map(lambda x: expand_contractions(x), restructure)
+            if html_meta:
+                split_words = split_word(word, str_type="html_meta")
+                # Lower case all meta words
+                split_words = list(map(lambda x: x.lower(), split_words))
+                restructured = restructured + split_words
+                # (2) Expand contracted words
+                restructured = expand_contractions_in_list(restructured)
+                # (3) Remove unwanted chars
+                restructured = remove_chars_from_list(restructured)
+                
+            else:
+                split_words = split_word(word, str_type="punctuation")
+                restructured = restructured + split_words
+                # (2) Expand contracted words
+                restructured = expand_contractions_in_list(restructured)
+                # (3) Remove unwanted chars
+                restructured = remove_chars_from_list(restructured, 
+                        acceptable_chars_list=[",", ".", ":", "$", "%"])
             
-            # (3) Remove unwanted chars
             # (4) Remove stopwords
         else:
             # An html tag
-            restructure = []
-        log.error("type(restructure): " + type(restructure))
-        if len(restructure) > 1:
-            new_sentence.extend(restructure)
-        else:
-            new_sentence.append(restructure[0])
-    return new_sentence
+            restructured.append(word)
+        # Append restructuredd word to new sentence
+        parsed_sentence = parsed_sentence + restructured
+    return parsed_sentence
 
-def split_word(word:str, pattern:str="(?=[A-Z])|[_\. ]"):
+def split_word(word:str, str_type):
     """Splits words at the given pattern.
     This function is not aware of html tags, and if one is supplied in the word,
     it will be treated like a regular word.
     Example: "<ArtiCle>" will become ["<Arti", "Cle>"]
+    The word passed as argument is expected to have been split from a 
+    sentence already by whitespace
     """
     # Capitals: "(?=[A-Z])"
     # Capitals and dot and underscore: "(?=[A-Z])|[_\.]"
-    result =  re.split(pattern, word)
+    
+    regex_dict = {
+        "html_meta": r"(?=[A-Z])|[_\. ]",
+        "punctuation": r"(?=[\.,])"
+    }
+    # html_meta: any html metadata found in html tags
+    # punctuation: split at universal natural language punctuation
+    if str_type not in regex_dict.keys():
+        raise ValueError(f"Split words does not have type {str_type}. \
+            Only the following are available: {regex_dict.keys()}")
+    
+    # Split words
+    result =  re.split(regex_dict[str_type], word)
     if type(result) is str:
         result = list(result)
+   
     return result
     
-def remove_chars_from_word(sentence:List[str], 
+def remove_chars_from_list(sentence:List[str], 
                                acceptable_chars_list:Optional[list]=None) -> List[str]:
     """Removes all characters except for the ones in the acceptable list.
     It is expected that the elements of the supplied list are individual "words" and not 
@@ -156,16 +187,22 @@ def remove_chars_from_word(sentence:List[str],
     if acceptable_chars_list:
         unwanted = ''.join(set(unwanted) - set(acceptable_chars_list))
    
-    new_sentence: List[str] = []
+    parsed_sentence: List[str] = []
     for word in sentence:
         if word[0] != "<" and word[-1] != ">":
             word = word.translate(str.maketrans('', '', unwanted))
         if word:
-            new_sentence.append(word)
-    return new_sentence
+            parsed_sentence.append(word)
+    return parsed_sentence
 
-
-def expand_contractions(word:str, contraction_mapping:dict=CONTRACTION_MAP) -> List[str]: 
+def expand_contractions_in_list(words:List[str]) -> List[str]:
+    expanded_words: List[str] = []
+    for word in words:
+        expanded_words.extend(expand_contraction(word).split())
+    return expanded_words
+        
+    
+def expand_contraction(word:str, contraction_mapping:dict=CONTRACTION_MAP) -> str: 
     try:
         expanded = contraction_mapping[word]
         return expanded

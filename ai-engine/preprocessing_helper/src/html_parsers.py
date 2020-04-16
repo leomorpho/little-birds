@@ -58,7 +58,7 @@ class CustomHtmlTarget():
         attrs_list = []
         for attr in attrs:
             attrs_list.append({attr: attrs[attr]})
-            important_word_set = nlp_pipeline(attrs[attr].split())
+            important_word_set = nlp_pipeline(attrs[attr], html_meta=True)
             if important_word_set:
                 self.results.meta_words_of_interest = \
                     self.results.meta_words_of_interest.union(important_word_set)
@@ -89,7 +89,7 @@ class CustomHtmlTarget():
                 # elem = elem.translate(str.maketrans('', '', punctuation))
                 # elem = expand_contractions(elem)
                 # elem = lemmatize_text(elem)
-                elem = nlp_pipeline(elem.split())
+                elem = nlp_pipeline(elem, html_meta=False)
                 log.error("html_parser:" + str(elem))
                 self.results.short_text.extend(elem)
                 log.error("short_text in parser:" + str(self.results.short_text))
