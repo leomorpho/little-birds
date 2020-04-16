@@ -201,8 +201,8 @@ class TestNlpHelpers():
         ),
         InputOutputTestCase(
             name="nominal",
-            input=["such", "fishes", "having", "breakfast"],
-            expected_output=["fishes", "breakfast"]
+            input=["Beautiful", "such", "fishes", "having", "breakfast", "$"],
+            expected_output=["Beautiful", "fishes", "breakfast", "$"]
         )
     ]
     @pytest.mark.parametrize("case", stop_word_in_list_cases)
@@ -244,6 +244,12 @@ class TestRestructure():
             input="He shouldn't, she mustn't",
             html_meta=False,
             expected_output=["He", "should", "not", ",", "she", "must", "not"]
+        ),
+        RestructureTestCase(
+            name="Capitalized words",
+            input="THIS WILL STAY CAPITALS",
+            html_meta=False,
+            expected_output=["THIS", "WILL", "STAY", "CAPITALS"]
         )
     ]
 
@@ -252,5 +258,97 @@ class TestRestructure():
         log.info("Case: " + case.name)
         log.debug("Input: " + str(case.input))
         result = nlp.restructure(case.input, case.html_meta)
+        log.debug("Result: " + str(result))
+        assert(result == case.expected_output)
+
+##########################################  
+##########################################
+# Test nlp pipeline
+########################################## 
+##########################################    
+class TestNlpPipeline():
+    class NlpPipelineTestCase():
+        def __init__(self, 
+                     name, 
+                     input, 
+                     expected_output, 
+                     html_meta=False, 
+                     remove_stopwords=False,
+                     lemmatize=False):
+            self.name = name
+            self.input = input
+            self.html_meta = html_meta
+            self.remove_stopwords = remove_stopwords
+            self.lemmatize = lemmatize
+            self.expected_output = expected_output
+            
+    to_run_through_nlp_pipeline = [
+        NlpPipelineTestCase(
+            name="Nominal",
+            input="Clear sentence needs some processing",
+            html_meta=False,
+            remove_stopwords=False,
+            lemmatize=False,
+            expected_output=["Clear", "sentence", "needs", "some", "processing"]
+        ),
+        NlpPipelineTestCase(
+            name="Stopword",
+            input="This sentence needs some processing",
+            html_meta=False,
+            remove_stopwords=True,
+            lemmatize=False,
+            expected_output=["sentence", "needs", "processing"]
+        ),
+        NlpPipelineTestCase(
+            name="Nominal html meta",
+            input="whyIsThisAllGlued",
+            html_meta=True,
+            remove_stopwords=True,
+            lemmatize=True,
+            expected_output=["glue"]
+        ),
+        NlpPipelineTestCase(
+            name="Long sentence",
+            input="spaCy determines the part-of-speech tag by default and assigns the corresponding lemma.",
+            html_meta=False,
+            remove_stopwords=True,
+            lemmatize=True,
+            expected_output=["spaCy", "determines", "part", "speech", "tag", "default", "assign", "correspond", "lemma", "."]
+        ),
+        NlpPipelineTestCase(
+            name="Oscar Wilde quote (remove stopwords, lemmatize)",
+            input="Be yourself; everyone else is already taken.",
+            html_meta=False,
+            remove_stopwords=True,
+            lemmatize=True,
+            expected_output=["everyone", "else", "already", "take", "."]
+        ),
+        NlpPipelineTestCase(
+            name="Oscar Wilde quote (remove stopwords)",
+            input="Be yourself; everyone else is already taken.",
+            html_meta=False,
+            remove_stopwords=True,
+            lemmatize=False,
+            expected_output=["everyone", "else", "already", "taken", "."]
+        ),
+        NlpPipelineTestCase(
+            name="Oscar Wilde quote (leave stopwords, don't lemmatize)",
+            input="Be yourself; everyone else is already taken.",
+            html_meta=False,
+            remove_stopwords=False,
+            lemmatize=False,
+            expected_output=["Be", "yourself", "everyone", "else", "is", "already", "taken", "."]
+        )
+    ]
+
+    @pytest.mark.parametrize("case", to_run_through_nlp_pipeline)
+    def test_nlp_preprocessing_pipeline(self, case):
+        log.info("Case: " + case.name)
+        log.debug("Input: " + str(case.input))
+        result = nlp.preprocessing_pipeline(
+            sentence=case.input,
+            html_meta=case.html_meta,
+            remove_stopwords=case.remove_stopwords,
+            lemmatize=case.lemmatize)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)

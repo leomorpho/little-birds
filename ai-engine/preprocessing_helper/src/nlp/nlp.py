@@ -21,7 +21,7 @@ stopword_list.remove('no')
 stopword_list.remove('not')
 stopword_list.remove('to')
 #tokenizer = ToktokTokenizer()
-nlp = spacy.load('en_core_web_sm', parse=True, tag=True, entity=True)
+spacy_nlp = spacy.load('en_core_web_sm', parse=True, tag=True, entity=True)
 dictionnary = enchant.Dict()
 
 def lemmatize_text(text: str) -> str:
@@ -48,9 +48,10 @@ def lemmatize_text(text: str) -> str:
 
 #     return data
 
-def nlp_pipeline(sentence:str, 
-                 html_meta:bool=False, 
-                 sequence:bool=True
+def preprocessing_pipeline(sentence:str, 
+                 html_meta:bool=False,
+                 remove_stopwords=False,
+                 lemmatize=True
                  ) -> str:
     """A full NLP pipeline to run on a string
     :param sentence: the sentence to be processed
@@ -67,8 +68,8 @@ def nlp_pipeline(sentence:str,
     # TODO: Not efficient, but let's fix that later...
 
     # Split and remove words (concatenations, contractions, stop words...)
-    sentence: List[str] = restructure(sentence, html_meta=True)
-    
+    sentence: List[str] = restructure(sentence, html_meta=html_meta)
+    log.error(sentence)
     # # (2) Run processes that run in-place in the list (and do not change its length)
     # for key, word in enumerate(sentence):
     #     # strip spaces
@@ -81,9 +82,15 @@ def nlp_pipeline(sentence:str,
     #     if dictionnary.check(word) is False:
     #         sentence[key] = ""
         # Remove empty html elements
-    
-    # # Remove all empty elements
-    sentence = [word for word in sentence if " " not in word]
+    # (4) Remove stopwords
+    if remove_stopwords:
+        sentence = remove_stopwords_from_list(sentence)
+        
+    if lemmatize:
+        sentence_str = spacy_nlp(" ".join(sentence))
+        sentence = [token.lemma_ for token in sentence_str]
+    # Remove all empty elements
+    # sentence = [word for word in sentence if " " not in word]
     # log.info("nlp_pipeline: " + str(sentence))
     
     return sentence
@@ -125,10 +132,7 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
                 restructured = expand_contractions_in_list(restructured)
                 # (3) Remove unwanted chars
                 restructured = remove_chars_from_list(restructured, 
-                        acceptable_chars_list=[",", ".", ":", "$", "%"])
-            
-            # (4) Remove stopwords
-            
+                        acceptable_chars_list=[",", ".", ":", "$", "%", "?"])     
         else:
             # An html tag
             restructured.append(word)
@@ -149,7 +153,7 @@ def split_word(word:str, str_type):
     
     regex_dict = {
         "html_meta": r"(?=[A-Z])|[_\. ]",
-        "punctuation": r"(?=[\.,])"
+        "punctuation": r"(?=[\.,-])"
     }
     # html_meta: any html metadata found in html tags
     # punctuation: split at universal natural language punctuation
