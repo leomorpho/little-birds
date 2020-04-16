@@ -9,7 +9,7 @@ from nltk.tokenize.toktok import ToktokTokenizer
 from nltk.corpus import words
 import enchant
 from .constants_en import CONTRACTION_MAP, META_WORDS_OF_INTEREST, USELESS_HTML_ATTRS_CONSTANTS
-from typing import Set, List, Optional
+from typing import Set, List, Optional, Any
 
 NLTK_DICT = set(words.words())
 log = logging.getLogger()
@@ -97,16 +97,6 @@ def nlp_pipeline(sentence:List[str],
     # log.info("nlp_pipeline: " + str(sentence))
     
     return sentence
-
-def add_to_list(mylist: List[str], elem: List[str]):
-    if len(mylist) is None or elem is None:
-        raise ValueError("List and/or element must not be None")
-    if len(elem) == 0:
-        return mylist
-    if len(elem) == 1:
-        return mylist.append(elem[0])
-    else:
-        return mylist.extend(elem)
     
 
 def restructure(sentence:List[str], do_split:bool=False) -> List[str]:
@@ -122,8 +112,8 @@ def restructure(sentence:List[str], do_split:bool=False) -> List[str]:
             # (1) Split if required
             if do_split:
                 split_word = split_word(word)
-                restructure = add_to_list(restructure, split_word)
-            restructure = add_to_list(restructure, word)
+                restructure = restructure + split_word
+            restructure = restructure + word
             # (2) Expand contracted words
             # restructure = map(lambda x: expand_contractions(x), restructure)
             
@@ -139,14 +129,17 @@ def restructure(sentence:List[str], do_split:bool=False) -> List[str]:
             new_sentence.append(restructure[0])
     return new_sentence
 
-def split_word(word:str, pattern:str=None):
+def split_word(word:str, pattern:str="(?=[A-Z])|[_\. ]"):
     """Splits words at the given pattern.
     This function is not aware of html tags, and if one is supplied in the word,
     it will be treated like a regular word.
     Example: "<ArtiCle>" will become ["<Arti", "Cle>"]
     """
-    result =  list(re.sub( r"([A-Z])|(_)", r" \1", word).split())
-    log.info("RESULT HERE ***********************")
+    # Capitals: "(?=[A-Z])"
+    # Capitals and dot and underscore: "(?=[A-Z])|[_\.]"
+    result =  re.split(pattern, word)
+    if type(result) is str:
+        result = list(result)
     return result
     
 def remove_chars_from_word(sentence:List[str], 
