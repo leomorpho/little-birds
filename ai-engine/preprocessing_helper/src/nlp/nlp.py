@@ -20,19 +20,9 @@ stopword_list = nltk.corpus.stopwords.words('english')
 stopword_list.remove('no')
 stopword_list.remove('not')
 stopword_list.remove('to')
-tokenizer = ToktokTokenizer()
+#tokenizer = ToktokTokenizer()
 nlp = spacy.load('en_core_web_sm', parse=True, tag=True, entity=True)
 dictionnary = enchant.Dict()
-
-def remove_stopwords(text: str, is_lower_case=False) -> str:
-    tokens = tokenizer.tokenize(text)
-    tokens = [token.strip() for token in tokens]
-    if is_lower_case:
-        filtered_tokens = [token for token in tokens if token not in stopword_list]
-    else:
-        filtered_tokens = [token for token in tokens if token.lower() not in stopword_list]
-    filtered_text = ' '.join(filtered_tokens)    
-    return filtered_text
 
 def lemmatize_text(text: str) -> str:
     # Do not lemmatize numbers or prices
@@ -138,6 +128,7 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
                         acceptable_chars_list=[",", ".", ":", "$", "%"])
             
             # (4) Remove stopwords
+            
         else:
             # An html tag
             restructured.append(word)
@@ -208,3 +199,12 @@ def expand_contraction(word:str, contraction_mapping:dict=CONTRACTION_MAP) -> st
         return expanded
     except:
         return word
+    
+def remove_stopwords_from_list(word_list: List[str], is_lower_case=False) -> List[str]:
+    if is_lower_case:
+        word_list = list(filter(lambda x: x not in stopword_list, word_list))
+        # [w for w in word_list if w not in stopword_list]
+    else:
+        #filtered_tokens = [token for token in tokens if token.lower() not in stopword_list]
+        word_list = list(filter(lambda x: x.lower() not in stopword_list, word_list))
+    return word_list

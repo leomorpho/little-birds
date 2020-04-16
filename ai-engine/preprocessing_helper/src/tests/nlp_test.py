@@ -186,6 +186,32 @@ class TestNlpHelpers():
         result = nlp.expand_contractions_in_list(case.input)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
+    
+    ##########################################
+    ##########################################
+    # Remove stop words
+    ##########################################
+    ##########################################
+    
+    stop_word_in_list_cases = [
+        InputOutputTestCase(
+            name="nominal",
+            input=["some", "but"],
+            expected_output=[]
+        ),
+        InputOutputTestCase(
+            name="nominal",
+            input=["such", "fishes", "having", "breakfast"],
+            expected_output=["fishes", "breakfast"]
+        )
+    ]
+    @pytest.mark.parametrize("case", stop_word_in_list_cases)
+    def test_remove_stop_words_from_list(self, case):
+        log.info("Case: " + case.name)
+        log.debug("Input: " + str(case.input))
+        result = nlp.remove_stopwords_from_list(case.input)
+        log.debug("Result: " + str(result))
+        assert(result == case.expected_output)
  
 ##########################################  
 ##########################################
