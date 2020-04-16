@@ -103,26 +103,26 @@ class CustomHtmlTarget():
         return self.results
 
 
-class HtmlCleaner():
-    def pretty_clean(self, html_str: str) -> str:
-        cleaner = Cleaner(style=True, 
-                          inline_style=True, 
-                          links=False, 
-                          page_structure=False)
-        clean_html = cleaner.clean_html(html_str)
-        return clean_html
-    
-    def bare_html(self, html_str: str) -> str:
-        """Removes all comments, scripts, JS and style tags"""
-        tags_to_remove = ["b", "strong", "i", "em", "mark", "small", "del", "ins", "sub", "sup"]
-        cleaner = Cleaner(style=True, 
-                          inline_style=True,
-                          scripts=True,
-                          javascript=True,
-                          comments=True,
-                          links=False, 
-                          remove_tags=tags_to_remove,
-                          forms=False)
-        html_clean = cleaner.clean_html(html_str)
-        return html_clean
+
+def pretty_clean(html_str: str) -> str:
+    cleaner = Cleaner(style=True, 
+                        inline_style=True, 
+                        links=False, 
+                        page_structure=False)
+    clean_html = cleaner.clean_html(html_str)
+    return clean_html
+
+def bare_html(html_str: str) -> str:
+    """Removes all comments, scripts, JS and style tags"""
+    tags_to_remove = ["b", "strong", "i", "em", "mark", "small", "del", "ins", "sub", "sup"]
+    cleaner = Cleaner(style=True, 
+                        inline_style=True,
+                        scripts=True,
+                        javascript=True,
+                        comments=True,
+                        links=False, 
+                        remove_tags=tags_to_remove,
+                        forms=False)
+    html_clean = cleaner.clean_html(html_str)
+    return html_clean
                 
