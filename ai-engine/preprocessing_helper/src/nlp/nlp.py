@@ -66,10 +66,8 @@ def preprocessing_pipeline(sentence:str,
         
     # (1) Run processes that change the length of the sentence
     # TODO: Not efficient, but let's fix that later...
-
     # Split and remove words (concatenations, contractions, stop words...)
     sentence: List[str] = restructure(sentence, html_meta=html_meta)
-    log.error(sentence)
     # # (2) Run processes that run in-place in the list (and do not change its length)
     # for key, word in enumerate(sentence):
     #     # strip spaces
@@ -83,10 +81,10 @@ def preprocessing_pipeline(sentence:str,
     #         sentence[key] = ""
         # Remove empty html elements
     # (4) Remove stopwords
-    if remove_stopwords:
+    if sentence and remove_stopwords:
         sentence = remove_stopwords_from_list(sentence)
         
-    if lemmatize:
+    if sentence and lemmatize:
         sentence_str = spacy_nlp(" ".join(sentence))
         sentence = [token.lemma_ for token in sentence_str]
     # Remove all empty elements
@@ -118,12 +116,9 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
             if html_meta:
                 split_words = split_word(word, str_type="html_meta")
                 # Lower case all meta words
-                split_words = list(map(lambda x: x.lower(), split_words))
-                restructured = restructured + split_words
-                # (2) Expand contracted words
-                restructured = expand_contractions_in_list(restructured)
-                # (3) Remove unwanted chars
-                restructured = remove_chars_from_list(restructured)
+                restructured = list(map(lambda x: x.lower(), split_words))
+                # (2) Remove unwanted chars
+                restructured = remove_chars_from_list(restructured, alpha_only=True)
                 
             else:
                 split_words = split_word(word, str_type="punctuation")
@@ -136,7 +131,7 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
         else:
             # An html tag
             restructured.append(word)
-        # Append restructuredd word to new sentence
+        # Append restructured word to new sentence
         parsed_sentence = parsed_sentence + restructured
     return parsed_sentence
 
@@ -172,22 +167,29 @@ def split_word(word:str, str_type):
     return result
     
 def remove_chars_from_list(sentence:List[str], 
-                               acceptable_chars_list:Optional[list]=None) -> List[str]:
+                               acceptable_chars_list:Optional[list]=None,
+                               alpha_only=False) -> List[str]:
     """Removes all characters except for the ones in the acceptable list.
     It is expected that the elements of the supplied list are individual "words" and not 
     whole strings of words.
     Example: ["This", "is", "a", "sentence"] is valid
     whereas  ["This is a sentence"] is invalid
+    :param alpha_only: Remove all non-letters
+    :type  alpha_only: bool
     """
+    parsed_sentence: List[str] = []
+    
+    # String to store unwanted chars
+    unwanted: str = string.punctuation + '“'
+
     # TODO: current list of unwanted chars do not comprise ASCII chars. It remains 
     # very limited for now and should be expanded.
-    unwanted: str = string.punctuation + '“'
-    if acceptable_chars_list:
-        unwanted = ''.join(set(unwanted) - set(acceptable_chars_list))
-   
-    parsed_sentence: List[str] = []
     for word in sentence:
-        if word[0] != "<" and word[-1] != ">":
+        if alpha_only:
+            word = re.sub(r"[^a-zA-Z]+", '', word)
+        elif word[0] != "<" and word[-1] != ">":
+            if acceptable_chars_list:
+                unwanted = ''.join(set(unwanted) - set(acceptable_chars_list))
             word = word.translate(str.maketrans('', '', unwanted))
         if word:
             parsed_sentence.append(word)

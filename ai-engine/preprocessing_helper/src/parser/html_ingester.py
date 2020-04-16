@@ -50,7 +50,6 @@ class CustomHtmlTarget():
     def start(self, tag, attrs) -> None:
         if tag in SEMANTIC_ELEMENTS:
             elem = "<" + tag + ">"
-            log.error("****####$$$$$$$$@@@@@@@^^^^^^^^^^**&^@#$%^&^%$%^%%%%%%%%%%%%%%" + elem)
             self.results.full_text.append(elem)
             self.results.short_text.append(elem)
             
@@ -63,7 +62,7 @@ class CustomHtmlTarget():
                 self.results.meta_words_of_interest = \
                     self.results.meta_words_of_interest.union(important_word_set)
         if len(attrs_list) > 0:
-            self.results.meta.append(str((tag, attrs_list)))
+            self.results.meta = self.results.meta + [{tag: attrs_list}]
         
     def end(self, tag) -> None:
         if tag in SEMANTIC_ELEMENTS:
