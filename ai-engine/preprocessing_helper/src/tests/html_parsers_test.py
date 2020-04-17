@@ -46,8 +46,16 @@ class TestCustomHtmlTarget():
             input="""<span class="pl-s1"><span class="pl-token" data-hydro-click="{&quot;event_type&quot;:&quot;code_navigation.click_on_symbol&quot;,&quot;payload&quot;:{&quot;action&quot;:&quot;click_on_symbol&quot;,&quot;repository_id&quot;:33884891,&quot;ref&quot;:&quot;master&quot;,&quot;language&quot;:&quot;Python&quot;,&quot;originating_url&quot;:&quot;https://github.com/apache/airflow/blob/master/airflow/models/dag.py&quot;,&quot;user_id&quot;:7016204}}" data-hydro-click-hmac="d5c0b5483771c151c381f07f0e385304d303f484a37a662a1883cabe23062ac9">conf</span></span>""",
             short_text=["conf"],
             full_text=["conf"],
-            meta=[],
-            meta_words_of_interest=[]
+            meta=[{'span': [{'class': 'pl-s1'}]}, {'span': [{'class': 'pl-token'}, {'data-hydro-click': '{"event_type":"code_navigation.click_on_symbol","payload":{"action":"click_on_symbol","repository_id":33884891,"ref":"master","language":"Python","originating_url":"https://github.com/apache/airflow/blob/master/airflow/models/dag.py","user_id":7016204}}'}, {'data-hydro-click-hmac': 'd5c0b5483771c151c381f07f0e385304d303f484a37a662a1883cabe23062ac9'}]}],
+            meta_words_of_interest=['com', 'ref', 'navigation', 'language', 'repository', 'model', 'token', 'click', 'symbol', 'airflow', 'action', 'type', 'dag', 'code', 'master', 'user', 'originate', 'event', 'blob', 'payload', 'python']
+        ),
+        HtmlEtreeParsingTestCase(
+            name="",
+            input="""<span class="pl-s1"><span class="pl-token" data-hydro-click="{&quot;event_type&quot;:&quot;code_navigation.click_on_symbol&quot;,&quot;payload&quot;:{&quot;action&quot;:&quot;click_on_symbol&quot;,&quot;repository_id&quot;:33884891,&quot;ref&quot;:&quot;master&quot;,&quot;language&quot;:&quot;Python&quot;,&quot;originating_url&quot;:&quot;https://github.com/apache/airflow/blob/master/airflow/models/dag.py&quot;,&quot;user_id&quot;:7016204}}" data-hydro-click-hmac="d5c0b5483771c151c381f07f0e385304d303f484a37a662a1883cabe23062ac9"><p>“We are what we repeatedly do. Excellence, then, is not an act, but a habit.”<br> – <em><strong>Aristotle</strong></em></p></span></span>""",
+            short_text=['repeatedly', '.', 'excellence', ',', ',', 'not', 'act', ',', 'habit', '. "', '<br/>', '<strong>', 'Aristotle', '</strong>', '<br/>'],
+            full_text=['“We are what we repeatedly do. Excellence, then, is not an act, but a habit.”', '<br/>', '<strong>', 'Aristotle', '</strong>', '<br/>'],
+            meta=[{'span': [{'class': 'pl-s1'}]}, {'span': [{'class': 'pl-token'}, {'data-hydro-click': '{"event_type":"code_navigation.click_on_symbol","payload":{"action":"click_on_symbol","repository_id":33884891,"ref":"master","language":"Python","originating_url":"https://github.com/apache/airflow/blob/master/airflow/models/dag.py","user_id":7016204}}'}, {'data-hydro-click-hmac': 'd5c0b5483771c151c381f07f0e385304d303f484a37a662a1883cabe23062ac9'}]}],
+            meta_words_of_interest=['com', 'ref', 'navigation', 'language', 'repository', 'model', 'token', 'click', 'symbol', 'airflow', 'action', 'type', 'dag', 'code', 'master', 'user', 'originate', 'event', 'blob', 'payload', 'python']
         )
     ]
     @pytest.mark.parametrize("case", to_feed_to_parser)
@@ -63,7 +71,7 @@ class TestCustomHtmlTarget():
         assert(result.short_text == case.short_text)
         assert(result.full_text == case.full_text)
         assert(result.meta == case.meta)
-        assert(result.meta_words_of_interest == case.meta_words_of_interest)
+        assert(set(result.meta_words_of_interest) == set(case.meta_words_of_interest))
 
   
 class TestHtmlCleaner():

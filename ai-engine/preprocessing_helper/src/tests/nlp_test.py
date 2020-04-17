@@ -22,82 +22,7 @@ class TestNlpHelpers():
             self.input = input
             self.str_type = str_type
             self.expected_output = expected_output
-        
-    ##########################################
-    ##########################################
-    # Word splitting tests
-    ##########################################
-    ##########################################
-    #NOTE: the nlp tests must not edit the html tags
-    html_meta_to_split = [
-        SplitWordsTestCase(
-            name="Camel Case",
-            input=["aCamelCaseWordToSplit"],
-            str_type="html_meta",
-            expected_output=["a", "Camel", "Case", "Word", "To", "Split"]),
-        SplitWordsTestCase(
-            name="Underscore",
-            input=["a_snake_case_word_to_split"],
-            str_type="html_meta",
-            expected_output=["a", "snake", "case", "word", "to", "split"]),
-        SplitWordsTestCase(
-            name="Html tags",
-            input=["<article></article>"],
-            str_type="html_meta",
-            expected_output=["<article></article>"]),
-        SplitWordsTestCase(
-            name="Html tags with capitals",
-            input=["<arTicLe></arTicLe>"],
-            str_type="html_meta",
-            expected_output=["<ar", "Tic", "Le></ar", "Tic", "Le>"]),
-        SplitWordsTestCase(
-            name="Camel and snake Case",
-            input=["aCamel_caseWord_toSplit"],
-            str_type="html_meta",
-            expected_output=["a", "Camel", "case", "Word", "to", "Split"]),
-        SplitWordsTestCase(
-            name="Camel and snake Case with $ signs",
-            input=["aCamel_ca.seWord_toSplit"],
-            str_type="html_meta",
-            expected_output=["a", "Camel", "ca", "se", "Word", "to", "Split"]),
-        SplitWordsTestCase(
-            name="Contractions",
-            input=["shouldn't can't musn't"],
-            str_type="html_meta",
-            expected_output=["shouldn't", "can't", "musn't"]),
-        SplitWordsTestCase(
-            name="Quotes",
-            input=['"angry" "lions"'],
-            str_type="html_meta",
-            expected_output=['"angry"', '"lions"']),
-        SplitWordsTestCase(
-            name="Quotes with capitals",
-            input=['"Angry" "lions"'],
-            str_type="html_meta",
-            expected_output=['"', 'Angry"', '"lions"'])]
-    
-    @pytest.mark.parametrize("case", html_meta_to_split)
-    def test_html_meta_splitting_cases(self, case):
-        log.info("Case: " + case.name)
-        log.debug("Input: " + str(case.input))
-        result = nlp.split_str_to_list(case.input[0], str_type=case.str_type)
-        log.debug("Result: " + str(result))
-        assert(result == case.expected_output)
-    
-    sentences_to_split = [
-        SplitWordsTestCase(
-            name="Sentence with punctuation",
-            input=["word,"],
-            str_type="punctuation",
-            expected_output=["word", ","])]
-    
-    @pytest.mark.parametrize("case", sentences_to_split)
-    def test_sentences_splitting_cases(self, case):
-        log.info("Case: " + case.name)
-        log.debug("Input: " + str(case.input))
-        result = nlp.split_str_to_list(case.input[0], str_type=case.str_type)
-        log.debug("Result: " + str(result))
-        assert(result == case.expected_output)
+            
     
     ##########################################
     ##########################################
@@ -252,7 +177,6 @@ class TestRestructure():
             expected_output=["THIS", "WILL", "STAY", "CAPITALS"]
         )
     ]
-
     @pytest.mark.parametrize("case", to_restructure)
     def test_restructure(self, case):
         log.info("Case: " + case.name)

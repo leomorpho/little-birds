@@ -88,17 +88,14 @@ class CustomHtmlTarget():
                 # elem = elem.translate(str.maketrans('', '', punctuation))
                 # elem = expand_contractions(elem)
                 # elem = lemmatize_text(elem)
-                elem = preprocessing_pipeline(elem, html_meta=False)
-                log.error("html_parser:" + str(elem))
+                elem = preprocessing_pipeline(elem, html_meta=False, remove_stopwords=True)
                 self.results.short_text.extend(elem)
-                log.error("short_text in parser:" + str(self.results.short_text))
                 break
  
     def comment(self, text) -> None:
         pass
     
     def close(self):
-        log.error("short_text in close of parser: " + str(self.results.short_text))
         return self.results
 
 

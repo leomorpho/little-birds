@@ -4,7 +4,7 @@ import os
 import logging
 import json
 import config
-from src.parser.html_ingester import HtmlCleaner, CustomHtmlTarget
+from src.parser.html_ingester import bare_html, CustomHtmlTarget
 from src.iadp.csv_db import MetaWordsImprover
 from bs4 import BeautifulSoup as bs
 from typing import List, Dict
@@ -13,8 +13,6 @@ from .nlp.constants_en import META_WORDS_OF_INTEREST
 
 log = logging.getLogger()
 log.setLevel(config.LOG_LEVEL)
-
-cleaner = HtmlCleaner()
 
 # Keys of the filenames dictionanry holding all of the filenames constants
 OUTPUT_FOLDER_KEY = "output_folder_key"
@@ -60,7 +58,7 @@ def get_filepaths_list() -> List[str]:
     return [SOURCE_HTML_FILEPATH, CORPUS_FILEPATH, METAWORDS_FILEPATH]
 
 def pretty_clean(html_str: str) -> str:
-    clean_html = cleaner.pretty_clean(html_str)
+    clean_html = bare_html(html_str)
     soup = bs(clean_html, "html.parser")  
     return soup.prettify()
 

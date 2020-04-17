@@ -24,11 +24,6 @@ stopword_list.remove('to')
 spacy_nlp = spacy.load('en_core_web_sm', parse=True, tag=True, entity=True)
 dictionnary = enchant.Dict()
 
-def lemmatize_text(text: str) -> str:
-    # Do not lemmatize numbers or prices
-    text = nlp(text)
-    text = ' '.join([word.lemma_ if word.lemma_ != '-PRON-' else word.text for word in text])
-    return text
 
 # def important_words(data: str) -> set():
 #     # Extract only words with letters
@@ -67,29 +62,17 @@ def preprocessing_pipeline(sentence:str,
     # (1) Run processes that change the length of the sentence
     # TODO: Not efficient, but let's fix that later...
     # Split and remove words (concatenations, contractions, stop words...)
-    sentence: List[str] = restructure(sentence, html_meta=html_meta)
-    # # (2) Run processes that run in-place in the list (and do not change its length)
-    # for key, word in enumerate(sentence):
-    #     # strip spaces
-    #     sentence[key] = word.strip()
-    #     # Remove stopwords
-    #     if word in stopword_list:
-    #         sentence[key] = ""
-    #     # Lemmatize
-    #     # Verify word is in dictionnary if not number or other symbol
-    #     if dictionnary.check(word) is False:
-    #         sentence[key] = ""
-        # Remove empty html elements
-    # (4) Remove stopwords
+    sentence: str = restructure(sentence, html_meta=html_meta)
+  
     if sentence and remove_stopwords:
         sentence = remove_stopwords_from_list(sentence)
         
     if sentence and lemmatize:
-        sentence_str = spacy_nlp(" ".join(sentence))
-        sentence = [token.lemma_ for token in sentence_str]
-    # Remove all empty elements
-    # sentence = [word for word in sentence if " " not in word]
-    # log.info("nlp_pipeline: " + str(sentence))
+        sentence = [lemmatize_text(word) for word in sentence]
+    
+    if sentence and html_meta:
+        # Remove words not in dictionnary
+        sentence = [word for word in sentence if dictionnary.check(word)]
     
     return sentence
     
@@ -114,60 +97,30 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
         if word[0] != "<" and word[-1] != ">":
             # (1) Split if required
             if html_meta:
-                split_str_to_lists = split_str_to_list(word, str_type="html_meta")
-                # Lower case all meta words
-                restructured = list(map(lambda x: x.lower(), split_str_to_lists))
-                # (2) Remove unwanted chars
-                restructured = remove_chars_from_list(restructured, alpha_only=True)
+                # Replace non-alpha chars
+                word = re.sub(r"[^a-zA-Z]+", ' ', word)
+                # Add space before capitals
+                word = re.sub(r"(?<=\w)([A-Z])", r" \1", word)
+                word = word.lower()
+                restructured = word.split()
+                
+                # Remove all one letter words 
+                restructured = [word for word in restructured if len(word) > 2]
                 
             else:
-                split_str_to_lists = split_str_to_list(word, str_type="punctuation")
-                restructured = restructured + split_str_to_lists
+                # Add space before punctuation
+                word = re.sub(r'([.,!?()-])', r' \1', word)
                 # (2) Expand contracted words
-                restructured = expand_contractions_in_list(restructured)
+                restructured = expand_contractions_in_list(word.split())
                 # (3) Remove unwanted chars
                 restructured = remove_chars_from_list(restructured, 
-                        acceptable_chars_list=[",", ".", ":", "$", "%", "?"])     
+                        acceptable_chars_list=[",", ".", ":", "$", "%", "?", "'"])     
         else:
             # An html tag
             restructured.append(word)
         # Append restructured word to new sentence
         parsed_sentence = parsed_sentence + restructured
     return parsed_sentence
-
-def split_str_to_list(word:str, str_type):
-    """Splits words at the given pattern.
-    This function is not aware of html tags, and if one is supplied in the word,
-    it will be treated like a regular word.
-    Example: "<ArtiCle>" will become ["<Arti", "Cle>"]
-    The word passed as argument is expected to have been split from a 
-    sentence already by whitespace
-    """
-    # Capitals: "(?=[A-Z])"
-    # Capitals and dot and underscore: "(?=[A-Z])|[_\.]"
-    
-    # TODO: extract regex constants to somewhere else. Also, move this parametrization
-    # higher up, such that custom regex can be passed (or other categories?). I don't
-    # know, just see which one works.
-
-    # html_meta: any html metadata found in html tags
-    # punctuation: split at universal natural language punctuation
-    if str_type == "html_meta":
-        # Split at capitals, preserving the capitals
-        result =  re.split(r"(?=[A-Z])|[_\. ]", word)
-        # # Split at various symbols
-        # result =  re.split(r"[_\. ]", result)
-        # # Split at anything that is not alphanumeric
-        # result =  re.split(r"(?=[^A-Za-z])", result)
-    elif str_type == "punctuation":
-        result =  re.split(r"(?=[\.,-])", word)
-    else:
-        raise ValueError(f"split_str_to_list does not support type {str_type}")
-    
-    if type(result) is str:
-        result = list(result)
-   
-    return result
     
 def remove_chars_from_list(sentence:List[str], 
                                acceptable_chars_list:Optional[list]=None,
@@ -220,3 +173,9 @@ def remove_stopwords_from_list(word_list: List[str], is_lower_case=False) -> Lis
         #filtered_tokens = [token for token in tokens if token.lower() not in stopword_list]
         word_list = list(filter(lambda x: x.lower() not in stopword_list, word_list))
     return word_list
+
+def lemmatize_text(text: str) -> str:
+    # Do not lemmatize numbers or prices
+    text = spacy_nlp(text)
+    text = ' '.join([word.lemma_ if word.lemma_ != '-PRON-' else word.text for word in text])
+    return text
