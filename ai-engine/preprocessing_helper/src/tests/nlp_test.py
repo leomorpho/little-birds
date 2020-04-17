@@ -80,7 +80,7 @@ class TestNlpHelpers():
     def test_html_meta_splitting_cases(self, case):
         log.info("Case: " + case.name)
         log.debug("Input: " + str(case.input))
-        result = nlp.split_word(case.input[0], str_type=case.str_type)
+        result = nlp.split_str_to_list(case.input[0], str_type=case.str_type)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
     
@@ -95,7 +95,7 @@ class TestNlpHelpers():
     def test_sentences_splitting_cases(self, case):
         log.info("Case: " + case.name)
         log.debug("Input: " + str(case.input))
-        result = nlp.split_word(case.input[0], str_type=case.str_type)
+        result = nlp.split_str_to_list(case.input[0], str_type=case.str_type)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
     

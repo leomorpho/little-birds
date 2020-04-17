@@ -114,15 +114,15 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
         if word[0] != "<" and word[-1] != ">":
             # (1) Split if required
             if html_meta:
-                split_words = split_word(word, str_type="html_meta")
+                split_str_to_lists = split_str_to_list(word, str_type="html_meta")
                 # Lower case all meta words
-                restructured = list(map(lambda x: x.lower(), split_words))
+                restructured = list(map(lambda x: x.lower(), split_str_to_lists))
                 # (2) Remove unwanted chars
                 restructured = remove_chars_from_list(restructured, alpha_only=True)
                 
             else:
-                split_words = split_word(word, str_type="punctuation")
-                restructured = restructured + split_words
+                split_str_to_lists = split_str_to_list(word, str_type="punctuation")
+                restructured = restructured + split_str_to_lists
                 # (2) Expand contracted words
                 restructured = expand_contractions_in_list(restructured)
                 # (3) Remove unwanted chars
@@ -135,7 +135,7 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
         parsed_sentence = parsed_sentence + restructured
     return parsed_sentence
 
-def split_word(word:str, str_type):
+def split_str_to_list(word:str, str_type):
     """Splits words at the given pattern.
     This function is not aware of html tags, and if one is supplied in the word,
     it will be treated like a regular word.
@@ -149,18 +149,21 @@ def split_word(word:str, str_type):
     # TODO: extract regex constants to somewhere else. Also, move this parametrization
     # higher up, such that custom regex can be passed (or other categories?). I don't
     # know, just see which one works.
-    regex_dict = {
-        "html_meta": r"(?=[A-Z])|[_\. ]",
-        "punctuation": r"(?=[\.,-])"
-    }
+
     # html_meta: any html metadata found in html tags
     # punctuation: split at universal natural language punctuation
-    if str_type not in regex_dict.keys():
-        raise ValueError(f"Split words does not have type {str_type}. \
-            Only the following are available: {regex_dict.keys()}")
+    if str_type == "html_meta":
+        # Split at capitals, preserving the capitals
+        result =  re.split(r"(?=[A-Z])|[_\. ]", word)
+        # # Split at various symbols
+        # result =  re.split(r"[_\. ]", result)
+        # # Split at anything that is not alphanumeric
+        # result =  re.split(r"(?=[^A-Za-z])", result)
+    elif str_type == "punctuation":
+        result =  re.split(r"(?=[\.,-])", word)
+    else:
+        raise ValueError(f"split_str_to_list does not support type {str_type}")
     
-    # Split words
-    result =  re.split(regex_dict[str_type], word)
     if type(result) is str:
         result = list(result)
    
