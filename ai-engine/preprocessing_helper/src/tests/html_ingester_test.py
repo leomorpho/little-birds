@@ -102,6 +102,11 @@ class TestRemoveEmptyHtmlElements():
             name = "Completely empty with 2 levels",
             input="<a><div></div></a>",
             expected_output=""
+        ),
+        InputOutputTestCase(
+            name = "Completely empty with 2 levels",
+            input="<a><div><br/><br/<div></div>>></div></a>",
+            expected_output=""
         )
     ]
     @pytest.mark.parametrize("case", remove_empty_html_elements)

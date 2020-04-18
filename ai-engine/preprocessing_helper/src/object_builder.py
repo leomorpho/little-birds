@@ -67,7 +67,7 @@ def pprint_unescape(escaped_html_str: str) -> str:
     soup = bs(unescaped, "html.parser")
     return soup.prettify()
     
-def call_pipeline(html_str: str) -> str:
+def call_pipeline(html_str:str, url:str=None) -> str:
     log.info("Enter call pipeline")
     raw_html = bare_html(html_str)
     parser = etree.HTMLParser(
@@ -102,10 +102,11 @@ def call_pipeline(html_str: str) -> str:
     log.debug(concise_text)  
     obj = {
         "id": uuid_str,
+        "url": url,
         "text": original_text,
         "conscise_text": concise_text,
         "meta_words_of_interest": meta_words_of_interest,
-        "meta": meta,
+        # "meta": meta,
         "annotation_approver": [], 
         "labels": [],
         "html": raw_html
@@ -135,19 +136,22 @@ def pipeline_on_saved_data() -> None:
     for html in original_htmls:
         pipeline_and_save(html, "w")
 
-def pipeline_and_save(html_str: str, write_mode :str="r") -> None:
+def pipeline_and_save(html_str: str, url: str, write_mode :str="r") -> None:
     # Add button in UI to save html (with url) to DB. Should there also be an option 
     # to add words to the metawords (like handpicked categories). This option would 
     # need autocomplete to be sure not to create too many metawords
-    if html_str is None or html_str == "":
+    if not html_str:
         raise ValueError("pipeline cannot run on empty string")
     
+    if not url:
+        raise ValueError("url needed to save work to disk")
+        
     # output folder must be set before calling pipeline because metawords 
     # are written to it.
     if os.path.isdir(filenames["output_folder_key"]) is False:
         os.mkdir(filenames["output_folder_key"])
         
-    result = call_pipeline(html_str)
+    result = call_pipeline(html_str, url)
     result_json = json.dumps(result, indent=4)
     
     if os.path.exists(CORPUS_FILEPATH) is False:

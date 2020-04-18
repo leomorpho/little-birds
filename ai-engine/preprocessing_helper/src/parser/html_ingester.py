@@ -148,9 +148,22 @@ def remove_empty_html_elems_caller(word_list: List[str]) -> List[str]:
     # This probably needs to be recursive
     return word_list
 
-def remove_empty_html_elems(word_list: List[str]) -> bool:
+def remove_empty_html_elems(x: List[str]) -> bool:
+    # # Don't touch <br/> elements
+    # if x[0] == HTML_NEWLINE_ELEM:
+    #     pass
     # If first elem is an opening tag
-    pass
+    if x[0][0] == "<" and x[0][-1] != "/":
+        # If has content, return list
+        
+        # If has no content, call f on [1:]
+        pass
+    # If first elem is a closing tag
+    elif x[0][0] == "<" and x[0][-1] == "/":
+        if x[0] == HTML_NEWLINE_ELEM:
+            return x
+            
+        pass
 
 def is_not_blank(s):
     return bool(s and s.strip())

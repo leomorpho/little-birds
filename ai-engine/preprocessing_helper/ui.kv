@@ -2,9 +2,9 @@
 ProcessHtml:
 
 <ProcessHtml>:
-    html_input: dirty_html
+    html_input: html_input
     url: url
-    html_output: clean_html
+    html_output: html_output
     BoxLayout:
         orientation: "vertical"
         ActionBar:
@@ -37,7 +37,7 @@ ProcessHtml:
                         text: 'Unescape html and pprint'
                         on_press: root.pprint_unescape()
         TextInput:
-            id: dirty_html
+            id: html_input
             multiline: True
             size_hint_y: 0.03
             auto_indent: True
@@ -55,7 +55,7 @@ ProcessHtml:
                 cursor_width: "2sp"
                 hint_text: "Enter URL"
             TextInput:
-                id: url
+                id: metaword
                 multiline: False
                 auto_indent: False
                 cursor_blink: True
@@ -72,4 +72,4 @@ ProcessHtml:
                 text_size: self.width, None
                 padding: 10, 10
                 text: "### NO RESULT ###"
-                id: clean_html
+                id: html_output
