@@ -20,14 +20,16 @@ NEWLINE_ELEMENTS = {"address", "article", "aside", "blockquote",
                        "header", "hgroup", "hr", "li", "main", "nav",
                        "ol", "p", "pre", "section", "table", "ul"}
 
+TABLE_ELEMENTS = {"caption", "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr"} 
+
 # Inline elements that must be kept in parsed text for semantics
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 SEMANTIC_ELEMENTS = {"a", "title", "cite", "code", "data", "dfn", "kbd", 
-                     "q", "s", "samp", "small", "strong", "sub", "time", "var"}
+                     "q", "s", "samp", "small", "strong", "sub", "time", 
+                     "var"}.union(TABLE_ELEMENTS)
 
 # MULTIMEDIA_ELEMENTS = {"audio", "img", "map", "track", "video"}
-# EMBEDDED_ELEMENTS = {"embed", "iframe", "object", "param", "picture", "source"}
-# TABLE_ELEMENTS = {"caption", "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr"}             
+# EMBEDDED_ELEMENTS = {"embed", "iframe", "object", "param", "picture", "source"}            
 
 HTML_NEWLINE_ELEM = "<br/>"
 
@@ -74,7 +76,7 @@ class CustomHtmlTarget():
             elem = "</" + tag + ">"
             self.results.full_text.append(elem)
             self.results.short_text.append(elem)  
-        if tag in NEWLINE_ELEMENTS:
+        elif tag in NEWLINE_ELEMENTS:
             self.results.full_text.append(HTML_NEWLINE_ELEM)
             self.results.short_text.append(HTML_NEWLINE_ELEM)
     

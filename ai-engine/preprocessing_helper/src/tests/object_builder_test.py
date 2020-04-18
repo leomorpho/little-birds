@@ -91,7 +91,13 @@ class TestPipelineAndSave():
             self.annotation_approver = annotation_approver
             self.labels = labels
             
-     
+   
+    # NOTE: if a string element is passed to the pipeline without html tags surrounding
+    #  it, the preprocessor will automatically add a <br/> newline html element because 
+    # the data input is incorrect html and will be wrapper by the html parser in 
+    # probably <html> tags, which is a newline character that triggers the parser to 
+    # add a <br/> element
+    
     # <br/> is added if a tag is a newline tag (div, article...)       
     table_test = [TestCase(name="price",
                             raw_html='<div>$42</div>', # divs will be removed
@@ -103,17 +109,17 @@ class TestPipelineAndSave():
                 #             text="price $42",
                 #             unprocessed_text='!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~price: $42</non-tag>'), 
                   TestCase(name="simple word",
-                            raw_html="<non-tag>hello",
-                            text="hello",
-                            unprocessed_text="hello"),
+                            raw_html="<td>hello</td>",
+                            text="<td> hello </td>",
+                            unprocessed_text="<td> hello </td>"),
                   TestCase(name="numbers",
-                            raw_html="<non-tag>42</non-tag>",
+                            raw_html="<img>42</img>",
                             text="42",
                             unprocessed_text="42"),
                   TestCase(name="numbers",
-                            raw_html="<non-tag>43 42</non-tag>",
-                            text="43 42",
-                            unprocessed_text="43 42"),
+                            raw_html="<a>43 42</a>",
+                            text="<a> 43 42 </a>",
+                            unprocessed_text="<a> 43 42 </a>"),
                   TestCase(name="simple div",
                             raw_html="<div>simple</div>",
                             text="simple <br/>",
@@ -133,7 +139,7 @@ class TestPipelineAndSave():
                             meta_words_of_interest=["small", "tree"]),
                   ]  
    
-    @pytest.mark.skip(reason="no way of currently testing this")
+    # @pytest.mark.skip(reason="no way of currently testing this")
     @pytest.mark.parametrize("obj", table_test)
     def test_html_cases(self, obj, manage_filepaths):
         self.verify_all_files_gone()
