@@ -81,8 +81,6 @@ class ProcessHtml(BoxLayout):
         if not self.html_input.text:
             self.html_output.text = "You must enter html data to parse it and save it to file"
             return
-        print("HERE")
-        print(self.url.text)
         if not self.url.text:
             self.html_output.text = "You must enter the url for the entered html"
             return  

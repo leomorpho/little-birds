@@ -112,7 +112,6 @@ class CustomHtmlTarget():
     
     def close(self):
         remove_extra_newline_elem(self.results.short_text, self.results.full_text)
-        self.results.full_text = remove_empty_html_elems_caller(self.results.full_text)
         return self.results
     
 def remove_extra_newline_elem(short_text, full_text: List[str]):
@@ -144,26 +143,27 @@ def bare_html(html_str: str) -> str:
     html_clean = cleaner.clean_html(html_str)
     return html_clean
 
-def remove_empty_html_elems_caller(word_list: List[str]) -> List[str]:
-    # This probably needs to be recursive
-    return word_list
+# TODO: For now, I don't care if there are empty html elements...
+# def remove_empty_html_elems_caller(word_list: List[str]) -> List[str]:
+#     # This probably needs to be recursive
+#     return word_list
 
-def remove_empty_html_elems(x: List[str]) -> bool:
-    # # Don't touch <br/> elements
-    # if x[0] == HTML_NEWLINE_ELEM:
-    #     pass
-    # If first elem is an opening tag
-    if x[0][0] == "<" and x[0][-1] != "/":
-        # If has content, return list
+# def remove_empty_html_elems(x: List[str]) -> bool:
+#     # # Don't touch <br/> elements
+#     # if x[0] == HTML_NEWLINE_ELEM:
+#     #     pass
+#     # If first elem is an opening tag
+#     if x[0][0] == "<" and x[0][-1] != "/":
+#         # If has content, return list
         
-        # If has no content, call f on [1:]
-        pass
-    # If first elem is a closing tag
-    elif x[0][0] == "<" and x[0][-1] == "/":
-        if x[0] == HTML_NEWLINE_ELEM:
-            return x
+#         # If has no content, call f on [1:]
+#         pass
+#     # If first elem is a closing tag
+#     elif x[0][0] == "<" and x[0][-1] == "/":
+#         if x[0] == HTML_NEWLINE_ELEM:
+#             return x
             
-        pass
+#         pass
 
 def is_not_blank(s):
     return bool(s and s.strip())

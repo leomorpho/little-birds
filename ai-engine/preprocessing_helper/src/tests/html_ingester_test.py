@@ -95,24 +95,26 @@ class TestHtmlCleaner():
         result = html_ingester.bare_html(case.input)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
-        
-class TestRemoveEmptyHtmlElements():
-    remove_empty_html_elements = [
-        InputOutputTestCase(
-            name = "Completely empty with 2 levels",
-            input="<a><div></div></a>",
-            expected_output=""
-        ),
-        InputOutputTestCase(
-            name = "Completely empty with 2 levels",
-            input="<a><div><br/><br/<div></div>>></div></a>",
-            expected_output=""
-        )
-    ]
-    @pytest.mark.parametrize("case", remove_empty_html_elements)
-    def test_remove_empty_html_elements(self, case):
-        log.info("Case: " + case.name)
-        log.debug("Input: " + str(case.input))
-        result = html_ingester.remove_empty_html_elems_caller(case.input)
-        log.debug("Result: " + str(result))
-        assert(result == case.expected_output)
+  
+# TODO: (maybe). For now, I ignore html trees that do not contain any data. 
+# Eventually I could remove them. However, for annotation, I don't care...
+# class TestRemoveEmptyHtmlElements():
+#     remove_empty_html_elements = [
+#         InputOutputTestCase(
+#             name = "Completely empty with 2 levels",
+#             input="<a><div></div></a>",
+#             expected_output=""
+#         ),
+#         InputOutputTestCase(
+#             name = "Completely empty with 2 levels",
+#             input="<a><div><br/><br/<div></div>>></div></a>",
+#             expected_output=""
+#         )
+#     ]
+#     @pytest.mark.parametrize("case", remove_empty_html_elements)
+#     def test_remove_empty_html_elements(self, case):
+#         log.info("Case: " + case.name)
+#         log.debug("Input: " + str(case.input))
+#         result = html_ingester.remove_empty_html_elems_caller(case.input)
+#         log.debug("Result: " + str(result))
+#         assert(result == case.expected_output)

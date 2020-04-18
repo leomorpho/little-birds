@@ -136,15 +136,12 @@ def pipeline_on_saved_data() -> None:
     for html in original_htmls:
         pipeline_and_save(html, "w")
 
-def pipeline_and_save(html_str: str, url: str, write_mode :str="r") -> None:
+def pipeline_and_save(html_str: str, write_mode :str="r", url: str=None) -> None:
     # Add button in UI to save html (with url) to DB. Should there also be an option 
     # to add words to the metawords (like handpicked categories). This option would 
     # need autocomplete to be sure not to create too many metawords
     if not html_str:
         raise ValueError("pipeline cannot run on empty string")
-    
-    if not url:
-        raise ValueError("url needed to save work to disk")
         
     # output folder must be set before calling pipeline because metawords 
     # are written to it.
@@ -152,7 +149,8 @@ def pipeline_and_save(html_str: str, url: str, write_mode :str="r") -> None:
         os.mkdir(filenames["output_folder_key"])
         
     result = call_pipeline(html_str, url)
-    result_json = json.dumps(result, indent=4)
+    result_json = json.dumps(result, indent=4, ensure_ascii=False)
+    log.error(result_json)
     
     if os.path.exists(CORPUS_FILEPATH) is False:
         log.info("creating corpus file")
@@ -165,8 +163,9 @@ def pipeline_and_save(html_str: str, url: str, write_mode :str="r") -> None:
     with open(SOURCE_HTML_FILEPATH, "a+") as f:
         f.write(html.escape(html_str))
         log.info("source html saved to file")
-    with open(CORPUS_FILEPATH, write_mode) as f:
-        f.write(result_json)
+    with open(CORPUS_FILEPATH, write_mode, encoding='utf8') as json_file:
+        #json.dump(result, json_file, ensure_ascii=False)
+        json_file.write(result_json)
         log.info("processed corpus saved to file")
     
     return result_json
