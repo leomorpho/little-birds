@@ -13,7 +13,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.actionbar import ActionBar
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
-from src.parser.html_ingester import HtmlCleaner
+from src.parser.html_ingester import bare_html
 from src.object_builder import pretty_clean, pprint_unescape, \
     call_pipeline, pipeline_on_saved_data, pipeline_and_save
 
@@ -26,9 +26,6 @@ from src.object_builder import pretty_clean, pprint_unescape, \
 # Remove html comments
 # Change new lines and longer than 1 space to 1 space
 # Encode
-
-   
-html_cleaner = HtmlCleaner()
 
 class ProcessHtml(BoxLayout):
     html_input = ObjectProperty()

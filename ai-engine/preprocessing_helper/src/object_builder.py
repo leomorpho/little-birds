@@ -69,25 +69,24 @@ def pprint_unescape(escaped_html_str: str) -> str:
     
 def call_pipeline(html_str: str) -> str:
     log.info("Enter call pipeline")
+    raw_html = bare_html(html_str)
     parser = etree.HTMLParser(
         target=CustomHtmlTarget(), 
         remove_blank_text=True,
         remove_comments=True,
         remove_pis=True)
-    result = etree.HTML(html_str, parser)
+    result = etree.HTML(raw_html, parser)
     
     # The following is not efficient, but lxml parser keeps adding root tags 
     # (html, body) to "incomplete" html strings. Since I only want to preserve
     #  the original, this is not ok, and I use a different parser to get the 
     # clean raw html. Since I only save the raw html for my corpus, the expense
     # is not that significant...
-    raw_html = cleaner.bare_html(html_str)
     raw_html = html.escape(" ".join(raw_html.split()))
     
     uuid_str = str(uuid.uuid4())
-    log.info("short_text: " + str(result.short_text))
-    short_text = " ".join(result.short_text)
-    full_text = " ".join(result.full_text)
+    original_text = " ".join(result.full_text)
+    concise_text = " ".join(result.short_text)
     
     # Persist words of interest to DB to sort them by prevalence and select new good ones
     # to add to META_WORDS_OF_INTEREST and USELESS_HTML_ATTRS_CONSTANTS
@@ -98,11 +97,13 @@ def call_pipeline(html_str: str) -> str:
     
     meta_words_of_interest = list(meta_words_of_interest & META_WORDS_OF_INTEREST)
     meta = result.meta
-        
+      
+    log.debug(original_text)
+    log.debug(concise_text)  
     obj = {
         "id": uuid_str,
-        "text": short_text,
-        "full_text": full_text,
+        "text": original_text,
+        "conscise_text": concise_text,
         "meta_words_of_interest": meta_words_of_interest,
         "meta": meta,
         "annotation_approver": [], 

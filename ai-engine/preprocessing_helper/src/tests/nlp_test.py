@@ -175,7 +175,13 @@ class TestRestructure():
             input="THIS WILL STAY CAPITALS",
             html_meta=False,
             expected_output=["THIS", "WILL", "STAY", "CAPITALS"]
-        )
+        ),
+        # RestructureTestCase(
+        #     name="Punctuation",
+        #     input='!"#%&\'()*+,-./:;<=>?@[\\]^_`{|}~price: $42',
+        #     html_meta=False,
+        #     expected_output=["price", "$42"]
+        # )
     ]
     @pytest.mark.parametrize("case", to_restructure)
     def test_restructure(self, case):
@@ -262,6 +268,22 @@ class TestNlpPipeline():
             remove_stopwords=False,
             lemmatize=False,
             expected_output=["Be", "yourself", "everyone", "else", "is", "already", "taken", "."]
+        ),
+        NlpPipelineTestCase(
+            name="Dollar amount)",
+            input="42$",
+            html_meta=False,
+            remove_stopwords=False,
+            lemmatize=False,
+            expected_output=["42$"]
+        ),
+        NlpPipelineTestCase(
+            name="Dollar amount)",
+            input="$42",
+            html_meta=False,
+            remove_stopwords=False,
+            lemmatize=False,
+            expected_output=["$42"]
         )
     ]
 

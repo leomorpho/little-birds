@@ -73,7 +73,6 @@ def preprocessing_pipeline(sentence:str,
     if sentence and html_meta:
         # Remove words not in dictionnary
         sentence = [word for word in sentence if dictionnary.check(word)]
-    
     return sentence
     
 
@@ -114,7 +113,8 @@ def restructure(sentence:str, html_meta:bool=False) -> List[str]:
                 restructured = expand_contractions_in_list(word.split())
                 # (3) Remove unwanted chars
                 restructured = remove_chars_from_list(restructured, 
-                        acceptable_chars_list=[",", ".", ":", "$", "%", "?", "'"])     
+                        acceptable_chars_list=[",", ".", ":", "$", "%", "?", "'"]) 
+                # restructured = list(map(lambda x: x.strip(), restructured))    
         else:
             # An html tag
             restructured.append(word)
