@@ -95,6 +95,11 @@ class ProcessHtml(BoxLayout):
             self.html_output.text = str(err)
         # pyperclip.copy(self.html_output.text)
         # pyperclip.paste()
+    
+    def clear_all_saved_data(self):
+        # CAREFUL: this will delete even the original html backed up on disk
+        object_builder.clear_all_files(original_html=True)
+        self.html_output.text = "All data saved on disk by this application was erased"
         
     
 

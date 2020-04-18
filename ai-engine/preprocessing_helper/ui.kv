@@ -36,6 +36,9 @@ ProcessHtml:
                     ActionButton:
                         text: 'Unescape html and pprint'
                         on_press: root.pprint_unescape()
+                    ActionButton:
+                        text: 'Clear ALL saved data'
+                        on_press: root.clear_all_saved_data()
         TextInput:
             id: html_input
             multiline: True

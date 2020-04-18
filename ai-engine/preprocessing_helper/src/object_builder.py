@@ -3,6 +3,7 @@ import html
 import os
 import logging
 import json
+import jsonlines
 import config
 from src.parser.html_ingester import bare_html, CustomHtmlTarget
 from src.iadp.csv_db import MetaWordsImprover
@@ -24,7 +25,7 @@ METAWORDS_FILENAME_KEY = "metawords_filename_key"
 # The set values are defaults and can be overriden.
 filenames = {OUTPUT_FOLDER_KEY: "output",
             CORPUS_FILENAME_KEY: "corpus.jsonl", # output of program
-            SOURCE_HTML_FILENAME_KEY: "source_html.json", # original input of program
+            SOURCE_HTML_FILENAME_KEY: "source_html.jsonl", # original input of program
             METAWORDS_FILENAME_KEY: "metawords.csv"} # words form html tags
 
 SOURCE_HTML_FILEPATH = filenames[OUTPUT_FOLDER_KEY] + \
@@ -98,8 +99,8 @@ def call_pipeline(html_str:str, url:str=None) -> str:
     meta_words_of_interest = list(meta_words_of_interest & META_WORDS_OF_INTEREST)
     meta = result.meta
       
-    log.debug(original_text)
-    log.debug(concise_text)  
+    # log.debug(original_text)
+    # log.debug(concise_text)  
     obj = {
         "id": uuid_str,
         "url": url,
@@ -114,8 +115,11 @@ def call_pipeline(html_str:str, url:str=None) -> str:
     log.info("Exit call pipeline")
     return obj
 
-def clear_all_files() -> None:
-    files = [SOURCE_HTML_FILEPATH, CORPUS_FILEPATH, METAWORDS_FILEPATH]
+def clear_all_files(original_html=False) -> None:
+    if original_html:
+        files = [SOURCE_HTML_FILEPATH, CORPUS_FILEPATH, METAWORDS_FILEPATH]
+    else:
+        files = [CORPUS_FILEPATH, METAWORDS_FILEPATH]
     for f in files:
         open(f, "w").close()
     
@@ -129,14 +133,16 @@ def pipeline_on_saved_data() -> None:
     
     clear_all_files()
     
-    original_htmls: List[str] = []
-    with open(SOURCE_HTML_FILEPATH, "r") as f:
-        original_htmls = f.readlines()
-    
-    for html in original_htmls:
-        pipeline_and_save(html, "w")
+    with jsonlines.open(SOURCE_HTML_FILEPATH, mode="r") as reader:
+        for obj in reader:
+            html_str = html.unescape(obj["escaped_html"])
+            pipeline_and_save(html_str=html_str, write_mode="w", persist_original_html=False)
 
-def pipeline_and_save(html_str: str, write_mode :str="r", url: str=None) -> None:
+def pipeline_and_save(html_str:str, 
+                      write_mode:str="r", 
+                      url:str=None, 
+                      persist_original_html:bool=True
+                      ) -> None:
     # Add button in UI to save html (with url) to DB. Should there also be an option 
     # to add words to the metawords (like handpicked categories). This option would 
     # need autocomplete to be sure not to create too many metawords
@@ -149,8 +155,8 @@ def pipeline_and_save(html_str: str, write_mode :str="r", url: str=None) -> None
         os.mkdir(filenames["output_folder_key"])
         
     result = call_pipeline(html_str, url)
-    result_json = json.dumps(result, indent=4, ensure_ascii=False)
-    log.error(result_json)
+    result_json = json.dumps(result, ensure_ascii=False)
+    # original_html_json = json.dumps({"escaped_html": html.escape(html_str)}, ensure_ascii=False)
     
     if os.path.exists(CORPUS_FILEPATH) is False:
         log.info("creating corpus file")
@@ -159,13 +165,14 @@ def pipeline_and_save(html_str: str, write_mode :str="r", url: str=None) -> None
         log.info("creating source html file")
         open(SOURCE_HTML_FILEPATH, "w").close()
     
-    # Do not overwrite SOURCE_HTML_FILEPATH or all original html data will be LOST!
-    with open(SOURCE_HTML_FILEPATH, "a+") as f:
-        f.write(html.escape(html_str))
-        log.info("source html saved to file")
-    with open(CORPUS_FILEPATH, write_mode, encoding='utf8') as json_file:
-        #json.dump(result, json_file, ensure_ascii=False)
-        json_file.write(result_json)
+    # Do not persist original html if pipeline is simply re-run on saved html
+    if persist_original_html:
+        # Do not overwrite SOURCE_HTML_FILEPATH or all original html data will be LOST!
+        with jsonlines.open(SOURCE_HTML_FILEPATH, mode="a") as writer:
+            writer.write({"escaped_html": html.escape(html_str)}) 
+            log.info("source html saved to file")
+    with jsonlines.open(CORPUS_FILEPATH, mode="a") as writer:
+        writer.write(result)
         log.info("processed corpus saved to file")
     
     return result_json
