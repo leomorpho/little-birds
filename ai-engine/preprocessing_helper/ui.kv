@@ -1,10 +1,49 @@
 #:kivy 1.11.1
 ProcessHtml:
+<BackgroundColor@Widget>
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<BackgroundLabel@Label+BackgroundColor>
+    background_color: 255, 255, 255, 1
+    # Default the background color for this label
+    # to r 0, g 0, b 0, a 0
+    
+<MessageBox>:
+    title: 'Popup Message Box'
+    size_hint: None, None
+    size: 400, 400
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: app.root.fuzzy_search_matches.selected_value
+        Button:
+            size_hint: 1, 0.2
+            text: 'OK'
+            on_press:
+                root.dismiss()
+
+<SelectableButton>:
+    # Draw a background to indicate selection
+    canvas.before:
+        Color:
+            rgba: (0.0, 0.9, 0.1, 0.3)
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 <ProcessHtml>:
     html_input: html_input
     url: url
     html_output: html_output
+    category_labels: category_labels
+    fuzzy_search_matches: fuzzy_search_matches
+    category_labels: category_labels
     BoxLayout:
         orientation: "vertical"
         ActionBar:
@@ -41,7 +80,7 @@ ProcessHtml:
                         on_press: root.clear_all_saved_data()
         TextInput:
             id: html_input
-            multiline: True
+            multiline: False
             size_hint_y: 0.03
             auto_indent: True
             cursor_blink: True
@@ -57,22 +96,67 @@ ProcessHtml:
                 cursor_blink: True
                 cursor_width: "2sp"
                 hint_text: "Enter URL"
-            TextInput:
-                id: metaword
-                multiline: False
-                auto_indent: False
-                cursor_blink: True
-                cursor_width: "2sp"
-                hint_text: "Enter a new metaword"
-        ScrollView:
-            do_scroll_x: False
-            do_scroll_y: True
-            bar_width: 30
-            scroll_type: ['content', 'bars']
-            Label:
-                size_hint_y: None
-                height: self.texture_size[1]
-                text_size: self.width, None
-                padding: 10, 10
-                text: "### NO RESULT ###"
-                id: html_output
+        BoxLayout:
+            # Results of the pipeline
+            ScrollView:
+                do_scroll_x: False
+                do_scroll_y: True
+                bar_width: 30
+                scroll_type: ['content', 'bars']
+                Label:
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    text_size: self.width, None
+                    padding: 10, 10
+                    text: "### NO RESULT ###"
+                    id: html_output
+            # All the category labels annotation
+            BoxLayout:
+                size_hint_x: 0.2
+                size_hint_y: 1
+                orientation: "vertical"
+                BoxLayout:
+                    orientation: "vertical"
+                    anchor_y: 'top'
+                    TextInput:
+                        id: category_label_input
+                        size_hint_y: 0.03
+                        multiline: False
+                        auto_indent: False
+                        cursor_blink: True
+                        cursor_width: "2sp"
+                        hint_text: "Enter category label"
+                        on_text: root.fuzzy_search_related_categories()
+                    FuzzySearchResultsRV:
+                        default_size: 1, None
+                        viewclass: 'SelectableButton'
+                        size_hint_y: 0.3
+                        SelectableRecycleBoxLayout:
+                            id: fuzzy_search_matches
+                            default_size: 1, dp(30)
+                            default_size_hint: 1, None
+                            size_hint_y: None
+                            size_hint_x: 1
+                            height: self.minimum_height
+                            orientation: "vertical"
+
+                BoxLayout:
+                    orientation: "vertical"
+                    # anchor_y: 'bottom'
+                    BackgroundLabel:
+                        size_hint_y: 0.09
+                        background_color: 255, 255, 255, 1
+                        color: 0, 0, 0, 1
+                        padding: 10, 10
+                        text: "Category labels"
+                    CategoryLabelsRV:
+                        default_size: 1, None
+                        viewclass: 'DeletableButton'
+                        SelectableRecycleBoxLayout:
+                            id: category_labels
+                            default_size: 1, dp(30)
+                            default_size_hint: 1, None
+                            size_hint_y: None
+                            size_hint_x: 1
+                            height: self.minimum_height
+                            orientation: "vertical"
