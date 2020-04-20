@@ -84,6 +84,7 @@ def call_pipeline(html_str:str, url:str=None) -> str:
     # clean raw html. Since I only save the raw html for my corpus, the expense
     # is not that significant...
     raw_html = html.escape(" ".join(raw_html.split()))
+    raw_html = ' '.join(raw_html.split())
     
     uuid_str = str(uuid.uuid4())
     original_text = " ".join(result.full_text)
@@ -169,7 +170,7 @@ def pipeline_and_save(html_str:str,
     if persist_original_html:
         # Do not overwrite SOURCE_HTML_FILEPATH or all original html data will be LOST!
         with jsonlines.open(SOURCE_HTML_FILEPATH, mode="a") as writer:
-            writer.write({"escaped_html": html.escape(html_str)}) 
+            writer.write({"escaped_html": result["html"]}) 
             log.info("source html saved to file")
     with jsonlines.open(CORPUS_FILEPATH, mode="a") as writer:
         writer.write(result)

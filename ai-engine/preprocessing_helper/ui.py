@@ -157,6 +157,9 @@ class ProcessHtml(BoxLayout):
             self.html_output.text = result
         except Exception as err:
             self.html_output.text = str(err)
+        finally:
+            self.html_input.text = ""
+            self.url.text = ""
         # pyperclip.copy(self.html_output.text)
         # pyperclip.paste()
     
