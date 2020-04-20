@@ -64,7 +64,7 @@ class CustomHtmlTarget():
         attrs_list = []
         for attr in attrs:
             attrs_list.append({attr: attrs[attr]})
-            important_word_set = preprocessing_pipeline(attrs[attr], html_meta=True)
+            important_word_set = preprocessing_pipeline(attrs[attr], remove_stopwords=True, html_meta=True)
             if important_word_set:
                 self.results.meta_words_of_interest = \
                     self.results.meta_words_of_interest.union(important_word_set)

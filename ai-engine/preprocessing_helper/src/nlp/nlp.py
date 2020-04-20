@@ -72,7 +72,7 @@ def preprocessing_pipeline(sentence:str,
     
     if sentence and html_meta:
         # Remove words not in dictionnary
-        sentence = [word for word in sentence if dictionnary.check(word)]
+        sentence = [word for word in sentence if (dictionnary.check(word) and word not in USELESS_HTML_ATTRS_CONSTANTS)]
     return sentence
     
 

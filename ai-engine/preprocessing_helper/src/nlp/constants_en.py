@@ -133,4 +133,4 @@ CONTRACTION_MAP = {
 
 META_WORDS_OF_INTEREST = {"product", "link", "datum", "price", "vehicle", "order"}
 
-USELESS_HTML_ATTRS_CONSTANTS = {"attr", "skus", "hidden"}
+USELESS_HTML_ATTRS_CONSTANTS = {"attr", "skus", "hidden", "com", "container", "label", "content", "search", "hide", "leave", "meta", "medium", "blank", "this", "ref", "none", "only", "main", "org", "height", "border", "trigger", "index", "inner", "all", "for", "your"}
