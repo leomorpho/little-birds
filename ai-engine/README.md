@@ -7,6 +7,8 @@ Start a development server with hot reloading:
 ## Preprocessing
 The text of html is extracted bu not cleaned for useless words. I keep that operation for later as I want to minimize the information loss since I am not yet sure of what I want to do with it. However, the extracted metadata from the html tags are cleaned to only retrieve useful words and info (like datetime, categories, important semantic words).
 
+A Kivy frontend UI is available to process html into the internal representation. To run, `python3 preprocessing_helper/ui/py`.
+
 ## Parse Webpage - Structural Components
 How to parse a normalized web page into structural components.
 * card
