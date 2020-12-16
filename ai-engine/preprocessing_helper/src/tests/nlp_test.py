@@ -7,23 +7,26 @@ from ..nlp import nlp
 log = logging.getLogger()
 log.setLevel(config.LOG_LEVEL)
 
+
 class InputOutputTestCase():
     """Default input output test case"""
+
     def __init__(self, name, input, expected_output):
         self.name = name
         self.input = input
         self.expected_output = expected_output
-            
+
+
 class TestNlpHelpers():
     class SplitWordsTestCase():
         """Default input output test case"""
+
         def __init__(self, name, input, expected_output, str_type):
             self.name = name
             self.input = input
             self.str_type = str_type
             self.expected_output = expected_output
-            
-    
+
     ##########################################
     ##########################################
     # Special chars tests
@@ -31,8 +34,10 @@ class TestNlpHelpers():
     ##########################################
 
     all_punctuation = string.punctuation + '“'
+
     class SpecialCharsCase():
         """Represents a test case with input and expected expected_output"""
+
         def __init__(self, name, input, expected_output, acceptable_chars_list=None):
             self.name = name
             self.input = input
@@ -45,15 +50,18 @@ class TestNlpHelpers():
             expected_output=["<div>", "</div>"]),
         SpecialCharsCase(
             name="Random chars",
-            input=["<div>", "!()-[]", "{};:'\"\,<", ">./?@", "#$%^&*_~", "</div>"],
+            input=["<div>", "!()-[]", "{};:'\"\,<", ">./?@",
+                   "#$%^&*_~", "</div>"],
             expected_output=["<div>", "</div>"]),
         SpecialCharsCase(
             name="A sentence is hiding",
-            input=["<div>", "!()a-[]", "{}senten;:'\"\,ce<", ">.is/?@", "#$%hi^&*ding_~", "</div>"],
+            input=["<div>", "!()a-[]", "{}senten;:'\"\,ce<",
+                   ">.is/?@", "#$%hi^&*ding_~", "</div>"],
             expected_output=["<div>", "a", "sentence", "is", "hiding", "</div>"]),
         SpecialCharsCase(
             name="Let's keep percent signs",
-            input=["<div>", "The!()-[re", "is", ":'\"\,<a", "per:'\"\,<cent", "char", "%", "</div>"],
+            input=["<div>", "The!()-[re", "is", ":'\"\,<a",
+                   "per:'\"\,<cent", "char", "%", "</div>"],
             acceptable_chars_list=["%"],
             expected_output=["<div>", "There", "is", "a", "percent", "char", "%", "</div>"]),
         SpecialCharsCase(
@@ -61,22 +69,22 @@ class TestNlpHelpers():
             input=["<div>", f'''{all_punctuation}''', "</div>"],
             acceptable_chars_list=list(all_punctuation),
             expected_output=["<div>", f'''{all_punctuation}''', "</div>"])]
-    
+
     @pytest.mark.parametrize("case", remove_unwanted_chars)
     def test_remove_unwanted_chars(self, case):
         log.info("Case: " + case.name)
         log.debug("Input: " + str(case.input))
-        result = nlp.remove_chars_from_list(case.input, 
-                                      acceptable_chars_list=case.acceptable_chars_list)
+        result = nlp.remove_chars_from_list(case.input,
+                                            acceptable_chars_list=case.acceptable_chars_list)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
-    
+
     ##########################################
     ##########################################
     # Expand contractions tests
     ##########################################
     ##########################################
-    
+
     expand_contraction_cases = [
         InputOutputTestCase(
             name="nominal",
@@ -89,6 +97,7 @@ class TestNlpHelpers():
             expected_output="I would"
         )
     ]
+
     @pytest.mark.parametrize("case", expand_contraction_cases)
     def test_expand_contraction(self, case):
         log.info("Case: " + case.name)
@@ -104,6 +113,7 @@ class TestNlpHelpers():
             expected_output=["cannot", "should", "not", "could", "not"]
         )
     ]
+
     @pytest.mark.parametrize("case", expand_contractions_in_list_cases)
     def test_expand_contractions_in_list(self, case):
         log.info("Case: " + case.name)
@@ -111,13 +121,13 @@ class TestNlpHelpers():
         result = nlp.expand_contractions_in_list(case.input)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
-    
+
     ##########################################
     ##########################################
     # Remove stop words
     ##########################################
     ##########################################
-    
+
     stop_word_in_list_cases = [
         InputOutputTestCase(
             name="nominal",
@@ -130,6 +140,7 @@ class TestNlpHelpers():
             expected_output=["Beautiful", "fishes", "breakfast", "$"]
         )
     ]
+
     @pytest.mark.parametrize("case", stop_word_in_list_cases)
     def test_remove_stop_words_from_list(self, case):
         log.info("Case: " + case.name)
@@ -137,12 +148,14 @@ class TestNlpHelpers():
         result = nlp.remove_stopwords_from_list(case.input)
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
- 
-##########################################  
+
+##########################################
 ##########################################
 # Test restructures
-########################################## 
-##########################################    
+##########################################
+##########################################
+
+
 class TestRestructure():
     class RestructureTestCase():
         def __init__(self, name, input, expected_output, html_meta=False):
@@ -150,7 +163,7 @@ class TestRestructure():
             self.input = input
             self.html_meta = html_meta
             self.expected_output = expected_output
-            
+
     to_restructure = [
         RestructureTestCase(
             name="Nominal",
@@ -183,6 +196,7 @@ class TestRestructure():
         #     expected_output=["price", "$42"]
         # )
     ]
+
     @pytest.mark.parametrize("case", to_restructure)
     def test_restructure(self, case):
         log.info("Case: " + case.name)
@@ -191,18 +205,20 @@ class TestRestructure():
         log.debug("Result: " + str(result))
         assert(result == case.expected_output)
 
-##########################################  
+##########################################
 ##########################################
 # Test nlp pipeline
-########################################## 
-##########################################    
+##########################################
+##########################################
+
+
 class TestNlpPipeline():
     class NlpPipelineTestCase():
-        def __init__(self, 
-                     name, 
-                     input, 
-                     expected_output, 
-                     html_meta=False, 
+        def __init__(self,
+                     name,
+                     input,
+                     expected_output,
+                     html_meta=False,
                      remove_stopwords=False,
                      lemmatize=False):
             self.name = name
@@ -211,7 +227,7 @@ class TestNlpPipeline():
             self.remove_stopwords = remove_stopwords
             self.lemmatize = lemmatize
             self.expected_output = expected_output
-            
+
     to_run_through_nlp_pipeline = [
         NlpPipelineTestCase(
             name="Nominal",
@@ -219,7 +235,8 @@ class TestNlpPipeline():
             html_meta=False,
             remove_stopwords=False,
             lemmatize=False,
-            expected_output=["Clear", "sentence", "needs", "some", "processing"]
+            expected_output=["Clear", "sentence",
+                             "needs", "some", "processing"]
         ),
         NlpPipelineTestCase(
             name="Stopword",
@@ -243,7 +260,8 @@ class TestNlpPipeline():
             html_meta=False,
             remove_stopwords=True,
             lemmatize=True,
-            expected_output=["spaCy", "determines", "part", "speech", "tag", "default", "assign", "correspond", "lemma", "."]
+            expected_output=["spaCy", "determines", "part", "speech",
+                             "tag", "default", "assign", "correspond", "lemma", "."]
         ),
         NlpPipelineTestCase(
             name="Oscar Wilde quote (remove stopwords, lemmatize)",
@@ -267,7 +285,8 @@ class TestNlpPipeline():
             html_meta=False,
             remove_stopwords=False,
             lemmatize=False,
-            expected_output=["Be", "yourself", "everyone", "else", "is", "already", "taken", "."]
+            expected_output=["Be", "yourself", "everyone",
+                             "else", "is", "already", "taken", "."]
         ),
         NlpPipelineTestCase(
             name="Dollar amount)",

@@ -1,11 +1,3 @@
-
-
-### Limitations
-
-* Space and time are expensive.
-
-
-
 ### Crawlers
 
 A map of sites is represented in a single DB. However, different crawlers will update it differently. A supercrawler could also bring all this logic together.
